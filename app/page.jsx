@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, Gift, PackageSearch, Users, HeartHandshake } from 'lucide-react'
+import { ArrowRight, Gift, PackageSearch, Users, HeartHandshake, Phone } from 'lucide-react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import Hero from '@/components/Hero'
@@ -7,7 +7,7 @@ import StatsBar from '@/components/StatsBar'
 import FeaturedInventory from '@/components/FeaturedInventory'
 import MiddletownPanel from '@/components/MiddletownPanel'
 import { getPublicInventory } from '@/lib/inventory'
-import { ROUTES } from '@/lib/site'
+import { ROUTES, DEALER } from '@/lib/site'
 
 // Page is dynamic so staff changes show at once; the upstream scrape itself
 // stays cached for 15 minutes inside lib/inventory's fetch.
@@ -60,9 +60,9 @@ export default async function Home() {
                 </div>
               </div>
             </div>
-            <Link href={ROUTES.inventory} className="btn-red whitespace-nowrap">
-              Shop All Inventory <ArrowRight size={15} />
-            </Link>
+            <a href={DEALER.phoneHref} className="btn-red whitespace-nowrap">
+              <Phone size={15} /> Call {DEALER.phone}
+            </a>
           </div>
         </section>
 

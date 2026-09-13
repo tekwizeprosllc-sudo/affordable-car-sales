@@ -51,8 +51,8 @@ export default function MiddletownPanel() {
           <br />
           Same streets.
         </p>
-        <Link href={ROUTES.about} className="btn-red w-full">
-          Our Story <ArrowRight size={14} />
+        <Link href={ROUTES.contact} className="btn-red w-full">
+          Get Directions <ArrowRight size={14} />
         </Link>
       </div>
     </aside>

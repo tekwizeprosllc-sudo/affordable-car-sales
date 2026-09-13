@@ -30,7 +30,7 @@ export default function HeroSearch() {
         />
       </div>
       <button type="submit" className="btn-red shrink-0">
-        Browse Inventory <ArrowRight size={15} />
+        Search <ArrowRight size={15} />
       </button>
     </form>
   );

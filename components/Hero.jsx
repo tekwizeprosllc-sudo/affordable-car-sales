@@ -56,7 +56,7 @@ export default function Hero() {
 
             <div className="mt-9 flex flex-wrap gap-3">
               <Link href={ROUTES.inventory} className="btn-red">
-                Browse Inventory <ArrowRight size={15} />
+                Browse All Vehicles <ArrowRight size={15} />
               </Link>
               <Link href={ROUTES.tradeIn} className="btn-ghost">
                 Value Your Trade
