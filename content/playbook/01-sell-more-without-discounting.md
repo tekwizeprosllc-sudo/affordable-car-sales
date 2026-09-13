@@ -1,5 +1,6 @@
 ---
 title: How to sell more cars this week without discounting first
+topic: pricing
 summary: Price is the last lever, not the first. Four things that move metal before you touch the number on the glass.
 ---
 

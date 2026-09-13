@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, PlayCircle } from 'lucide-react'
 import { isAuthed } from '@/lib/auth'
 import AdminLogin from '@/components/AdminLogin'
 import { getArticle } from '@/lib/playbook'
+import PlaybookArt from '@/components/PlaybookArt'
 
 export const dynamic = 'force-dynamic'
 
@@ -87,10 +88,25 @@ export default function ArticlePage({ params }) {
       </Link>
 
       <article>
+        <div className="mb-7 overflow-hidden rounded-[6px]">
+          <PlaybookArt topic={article.topic} className="h-36" label={article.topic} />
+        </div>
+
         <h1 className="font-display text-[clamp(2rem,4vw,2.8rem)] font-black uppercase leading-[0.95]">{article.title}</h1>
         <p className="mt-2 text-[11px] font-extrabold uppercase tracking-[0.14em]" style={{ color: 'var(--muted)' }}>
           {article.minutes} min read
         </p>
+        {article.video && (
+          <a
+            href={article.video}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-ghost mt-5 inline-flex"
+          >
+            <PlayCircle size={15} /> Watch the walkthrough
+          </a>
+        )}
+
         <div className="mt-6">{render(article.body)}</div>
       </article>
     </main>

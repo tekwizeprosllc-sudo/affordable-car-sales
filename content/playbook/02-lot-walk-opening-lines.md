@@ -1,5 +1,6 @@
 ---
 title: Lot walk — opening lines that do not sound like a script
+topic: floor
 summary: The first fifteen seconds decide whether someone talks to you or waits you out. What to say instead of "can I help you find something?"
 ---
 

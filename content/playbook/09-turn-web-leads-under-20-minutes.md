@@ -1,5 +1,6 @@
 ---
 title: Turning Ava and web leads in under 20 minutes
+topic: speed
 summary: Speed is the whole game on internet leads. Who calls, what they say, and what to do when nobody picks up.
 ---
 

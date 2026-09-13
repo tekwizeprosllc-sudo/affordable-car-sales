@@ -214,6 +214,43 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
   }
 
+  /* Continuous conveyor. The track holds two copies of the list, so shifting
+     it left by exactly half its width loops with no visible seam. */
+  @keyframes ticker {
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(-50%, 0, 0); }
+  }
+
+  .ticker-track {
+    animation-name: ticker;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    will-change: transform;
+  }
+
+  .ticker-viewport:hover .ticker-track,
+  .ticker-viewport:focus-within .ticker-track,
+  .ticker-viewport.is-paused .ticker-track {
+    animation-play-state: paused;
+  }
+
+  .ticker-fade {
+    background: linear-gradient(90deg, var(--bg), transparent);
+  }
+
+  .ticker-fade-r {
+    background: linear-gradient(270deg, var(--bg), transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ticker-track {
+      animation: none;
+    }
+    .ticker-viewport {
+      overflow-x: auto;
+    }
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }

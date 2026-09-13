@@ -1,5 +1,6 @@
 ---
 title: How to photograph a used car so it looks like a $20k site
+topic: photos
 summary: The gap between a cheap listing and an expensive one is mostly background, angle, and height. None of it costs money.
 ---
 

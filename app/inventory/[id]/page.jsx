@@ -7,6 +7,7 @@ import VehicleGallery from '@/components/VehicleGallery'
 import LeadForm from '@/components/LeadForm'
 import PaymentEstimator from '@/components/PaymentEstimator'
 import { getVehicle } from '@/lib/inventory'
+import { getMpg } from '@/lib/mpg'
 import { chipsFor } from '@/lib/vehicleUtils'
 import { DEALER, ROUTES } from '@/lib/site'
 
@@ -58,6 +59,7 @@ export default async function VehiclePage({ params }) {
   const vehicle = await getVehicle(params.id)
   if (!vehicle) notFound()
 
+  const mpg = await getMpg(vehicle)
   const title = `${vehicle.year} ${vehicle.make} ${vehicle.model}`
   const chips = chipsFor(vehicle)
 
@@ -85,12 +87,24 @@ export default async function VehiclePage({ params }) {
                 <Spec icon={Car} label="Drivetrain" value={vehicle.drive} />
                 <Spec icon={Car} label="Body Style" value={vehicle.bodyType} />
                 <Spec icon={Fuel} label="Fuel" value={vehicle.fuel} />
+                <Spec
+                  icon={Gauge}
+                  label="EPA MPG"
+                  value={mpg ? `${mpg.city} city / ${mpg.highway} hwy${mpg.combined ? ` · ${mpg.combined} combined` : ''}` : null}
+                />
                 <Spec icon={Palette} label="Exterior" value={vehicle.color} />
                 <Spec icon={Palette} label="Interior" value={vehicle.interiorColor} />
                 <Spec icon={Hash} label="Stock #" value={vehicle.stock} />
                 <Spec icon={Hash} label="VIN" value={vehicle.vin} />
               </div>
             </div>
+
+            {mpg && (
+              <p className="mt-3 text-[11px] leading-relaxed" style={{ color: 'var(--muted)' }}>
+                MPG is the EPA estimate for the {vehicle.year} {vehicle.make} {mpg.epaModel}. Real mileage
+                depends on how and where it is driven.
+              </p>
+            )}
 
             {vehicle.description && (
               <div className="mt-8">

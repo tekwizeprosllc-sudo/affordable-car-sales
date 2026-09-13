@@ -19,15 +19,15 @@ export default function CompareTray() {
         </span>
 
         <div className="flex flex-1 flex-wrap gap-1.5">
-          {ids.map((id) => (
+          {ids.map(({ id, label }) => (
             <button
               key={id}
               onClick={() => toggle(id)}
-              className="inline-flex items-center gap-1.5 rounded-[3px] px-2 py-1.5 text-[10px] font-bold uppercase tracking-[0.1em] transition hover:text-crimson"
+              className="inline-flex items-center gap-1.5 rounded-[3px] px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.08em] transition hover:text-crimson"
               style={{ background: 'var(--surface-2)', border: '1px solid var(--line)', color: 'var(--muted)' }}
-              aria-label={`Remove vehicle ${id} from compare`}
+              aria-label={`Remove ${label} from compare`}
             >
-              #{String(id).replace(/^m/, '')}
+              {label}
               <X size={11} />
             </button>
           ))}
@@ -38,7 +38,7 @@ export default function CompareTray() {
         </button>
 
         {ids.length > 1 ? (
-          <Link href={`/compare?ids=${ids.join(',')}`} className="btn-red py-2.5 text-[11px]">
+          <Link href={`/compare?ids=${ids.map((x) => x.id).join(',')}`} className="btn-red py-2.5 text-[11px]">
             Compare {ids.length} <ArrowRight size={13} />
           </Link>
         ) : (

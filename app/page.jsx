@@ -4,7 +4,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import Hero from '@/components/Hero'
 import StatsBar from '@/components/StatsBar'
-import FeaturedInventory from '@/components/FeaturedInventory'
+import InventoryTicker from '@/components/InventoryTicker'
 import MiddletownPanel from '@/components/MiddletownPanel'
 import { getPublicInventory } from '@/lib/inventory'
 import { ROUTES, DEALER } from '@/lib/site'
@@ -21,9 +21,9 @@ const PROMISES = [
 
 export default async function Home() {
   const { vehicles } = await getPublicInventory()
-  // A strip full of "images coming soon" costs more trust than a shorter strip.
+  // The ticker only carries cars we can actually show. A conveyor of "images
+  // coming soon" tiles would advertise the gap rather than the lot.
   const withPhotos = vehicles.filter((v) => v.image)
-  const featured = (withPhotos.length >= 4 ? withPhotos : vehicles).slice(0, 10)
 
   return (
     <>
@@ -31,7 +31,7 @@ export default async function Home() {
       <main>
         <Hero />
         <StatsBar />
-        <FeaturedInventory vehicles={featured} total={vehicles.length} />
+        <InventoryTicker vehicles={withPhotos} total={vehicles.length} />
 
         <section className="mx-auto max-w-[1400px] px-6 pb-16">
           <div

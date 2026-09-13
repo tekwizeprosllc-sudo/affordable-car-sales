@@ -1,5 +1,6 @@
 ---
 title: Financing talk for all-credit lots — legal and human
+topic: finance
 summary: What you can promise, what you absolutely cannot, and how to have the credit conversation without making someone feel small.
 ---
 

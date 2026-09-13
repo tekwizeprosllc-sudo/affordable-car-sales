@@ -32,7 +32,7 @@ export default function InventoryBrowser({ vehicles, initialQuery = '' }) {
   const active = Object.entries(filters).filter(([, v]) => v);
 
   return (
-    <div className="mx-auto grid max-w-[1400px] gap-8 px-6 py-12 lg:grid-cols-[270px_1fr]">
+    <div className="mx-auto grid max-w-[1400px] gap-8 px-6 pb-12 pt-7 lg:grid-cols-[270px_1fr]">
       <aside className="lg:sticky lg:top-24 lg:self-start">
         <div className="panel rounded-[5px] p-5">
           <h2 className="mb-4 flex items-center gap-2 font-display text-[15px] font-bold uppercase tracking-[0.14em]">

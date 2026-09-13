@@ -1,5 +1,6 @@
 ---
 title: Follow-up texts that get a reply the same day
+topic: followup
 summary: Most follow-up fails because it asks for nothing and offers nothing. Short, specific, and easy to answer wins.
 ---
 

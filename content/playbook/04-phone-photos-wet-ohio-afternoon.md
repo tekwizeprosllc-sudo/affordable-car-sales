@@ -1,5 +1,6 @@
 ---
 title: Phone photos on a wet Ohio afternoon — settings and order of shots
+topic: photos
 summary: Gray sky and a wet lot are not a problem. They are the best free lighting you get around here, if you know what to fix.
 ---
 

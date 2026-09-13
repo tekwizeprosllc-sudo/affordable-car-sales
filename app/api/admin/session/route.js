@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server'
-import { verifyPassword, sessionCookie, clearedCookie } from '@/lib/auth'
+import { verifyPassword, sessionCookie, clearedCookie, isConfigured } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
 export async function POST(request) {
   const { password } = await request.json().catch(() => ({}))
+  if (!isConfigured()) {
+    return NextResponse.json(
+      { error: 'Admin access is not configured on this server. Set ADMIN_PASSWORD.' },
+      { status: 503 }
+    )
+  }
   if (!verifyPassword(password)) {
     return NextResponse.json({ error: 'Incorrect password.' }, { status: 401 })
   }

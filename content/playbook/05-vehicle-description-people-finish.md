@@ -1,5 +1,6 @@
 ---
 title: Writing a vehicle description people finish reading
+topic: listing
 summary: Nobody reads a wall of capital letters. Four short paragraphs, written like a person, outsell a spec dump every time.
 ---
 

@@ -28,6 +28,7 @@ export default async function InventoryPage({ searchParams }) {
           accent="Inventory"
           copy="Every vehicle here is on our lot in Middletown right now — hand-picked, inspected, and priced up front."
           image={ASSETS.lotGrid}
+          compact
         />
         {vehicles.length === 0 ? (
           <div className="mx-auto max-w-[1400px] px-6 py-20">

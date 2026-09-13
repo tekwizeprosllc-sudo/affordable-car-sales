@@ -1,5 +1,6 @@
 ---
 title: What "Photos Coming Soon" is costing you
+topic: photos
 summary: A listing with no photos gets a fraction of the views of one with twelve. Here is the actual math and the fifteen minute fix.
 ---
 

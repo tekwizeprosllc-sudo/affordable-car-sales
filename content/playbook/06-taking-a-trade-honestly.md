@@ -1,5 +1,6 @@
 ---
 title: Taking a trade without lying to the customer or the book
+topic: trade
 summary: The trade is where most deals die and most reviews get written. How to give a real number and have it survive the conversation.
 ---
 

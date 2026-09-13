@@ -1,6 +1,6 @@
 import { ASSETS } from '@/lib/site';
 
-export default function PageHero({ eyebrow, title, accent, copy, image = ASSETS.storefrontNight, focal = 'center' }) {
+export default function PageHero({ eyebrow, title, accent, copy, image = ASSETS.storefrontNight, focal = 'center', compact = false }) {
   return (
     <section className="relative isolate overflow-hidden">
       <div className="absolute inset-0 -z-10">
@@ -12,7 +12,7 @@ export default function PageHero({ eyebrow, title, accent, copy, image = ASSETS.
         <div className="noise absolute inset-0" />
       </div>
 
-      <div className="mx-auto max-w-[1400px] px-6 py-16 md:py-20">
+      <div className={`mx-auto max-w-[1400px] px-6 ${compact ? "py-8 md:py-10" : "py-16 md:py-20"}`}>
         {eyebrow && <p className="eyebrow mb-3">{eyebrow}</p>}
         <h1 className="font-display text-[clamp(2.4rem,5.4vw,4rem)] font-black uppercase leading-[0.9]">
           <span className="chrome-text">{title}</span>{' '}

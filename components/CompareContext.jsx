@@ -14,7 +14,14 @@ export default function CompareProvider({ children }) {
 
   useEffect(() => {
     try {
-      setIds(JSON.parse(sessionStorage.getItem(KEY) || '[]'));
+      const raw = JSON.parse(sessionStorage.getItem(KEY) || '[]');
+      // Entries were plain ids before labels existed; normalise so an older
+      // session does not render blank chips.
+      setIds(
+        raw
+          .map((x) => (typeof x === 'string' ? { id: x, label: `#${x.replace(/^m/, '')}` } : x))
+          .filter((x) => x && x.id)
+      );
     } catch (e) {}
   }, []);
 
@@ -29,9 +36,15 @@ export default function CompareProvider({ children }) {
     () => ({
       ids,
       full: ids.length >= MAX,
-      has: (id) => ids.includes(id),
-      toggle: (id) =>
-        persist(ids.includes(id) ? ids.filter((x) => x !== id) : ids.length >= MAX ? ids : [...ids, id]),
+      has: (id) => ids.some((x) => x.id === id),
+      toggle: (id, label) =>
+        persist(
+          ids.some((x) => x.id === id)
+            ? ids.filter((x) => x.id !== id)
+            : ids.length >= MAX
+              ? ids
+              : [...ids, { id, label: label || String(id) }]
+        ),
       clear: () => persist([]),
     }),
     [ids]

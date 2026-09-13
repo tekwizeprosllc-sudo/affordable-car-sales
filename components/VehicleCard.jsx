@@ -91,7 +91,7 @@ export default function VehicleCard({ vehicle, className = '' }) {
           </div>
         )}
 
-        <div className="mt-4 flex items-center gap-2">
+        <div className="mt-4 flex items-center gap-2 pt-0 [margin-top:auto]">
           <Link
             href={ROUTES.vehicle(vehicle.id)}
             className="btn-ghost flex-1 justify-center py-2.5 text-[11px]"
@@ -99,7 +99,7 @@ export default function VehicleCard({ vehicle, className = '' }) {
             View Details <ArrowRight size={13} />
           </Link>
           <button
-            onClick={() => toggleCompare(vehicle.id)}
+            onClick={() => toggleCompare(vehicle.id, `${vehicle.year} ${vehicle.make} ${vehicle.model}`)}
             disabled={!comparing && full}
             title={!comparing && full ? 'Compare holds three at a time' : 'Add to compare'}
             aria-pressed={comparing}

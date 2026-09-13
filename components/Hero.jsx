@@ -12,7 +12,7 @@ const TRUST = [
 
 export default function Hero() {
   return (
-    <section className="relative isolate overflow-hidden pb-12 pt-28 lg:pt-32">
+    <section className="relative isolate overflow-hidden pb-10 pt-28 lg:pt-32">
       <div className="absolute inset-0 -z-10">
         <img src={ASSETS.dealershipDusk} alt="" className="hero-photo h-full w-full object-cover object-center" />
         <div className="hero-glow absolute inset-0" />
@@ -54,12 +54,9 @@ export default function Hero() {
               ))}
             </div>
 
-            <div className="mt-9 flex flex-wrap gap-3">
-              <Link href={ROUTES.inventory} className="btn-red">
-                Browse All Vehicles <ArrowRight size={15} />
-              </Link>
+            <div className="mt-8 flex flex-wrap gap-3">
               <Link href={ROUTES.tradeIn} className="btn-ghost">
-                Value Your Trade
+                Value Your Trade <ArrowRight size={15} />
               </Link>
             </div>
           </div>

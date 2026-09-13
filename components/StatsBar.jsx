@@ -20,13 +20,13 @@ export default function StatsBar() {
         borderBottom: '1px solid var(--line)',
       }}
     >
-      <div className="mx-auto grid max-w-[1400px] grid-cols-2 gap-6 px-6 py-7 md:grid-cols-4">
+      <div className="mx-auto grid max-w-[1400px] grid-cols-2 gap-x-6 gap-y-3 px-6 py-3.5 md:grid-cols-4">
         {ITEMS.map(({ icon: Icon, value, label }) => (
-          <div key={label} className="flex items-center gap-3">
-            <Icon size={22} className="shrink-0" style={{ color: 'var(--muted)' }} />
+          <div key={label} className="flex items-center gap-2.5">
+            <Icon size={16} className="shrink-0" style={{ color: 'var(--muted)' }} />
             <div className="min-w-0">
-              <div className="font-display text-[20px] font-black uppercase leading-none text-crimson">{value}</div>
-              <div className="mt-1.5 text-[11px] font-semibold" style={{ color: 'var(--muted)' }}>
+              <div className="font-display text-[14px] font-black uppercase leading-none text-crimson">{value}</div>
+              <div className="text-[10.5px] font-semibold leading-tight" style={{ color: 'var(--muted)' }}>
                 {label}
               </div>
             </div>
