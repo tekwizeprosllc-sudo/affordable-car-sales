@@ -10,8 +10,26 @@ export const metadata = {
   robots: { index: false, follow: false },
 }
 
-export default function AdminPage() {
+export default async function AdminPage() {
   if (!isAuthed()) return <AdminLogin />
 
-  return <AdminDashboard initialLeads={listLeads()} counts={leadCounts()} />
+  try {
+    const [initialLeads, counts] = await Promise.all([listLeads(), leadCounts()])
+    return <AdminDashboard initialLeads={initialLeads} counts={counts} />
+  } catch (err) {
+    return (
+      <main className="grid min-h-screen place-items-center px-6" style={{ background: 'var(--bg)' }}>
+        <div className="panel max-w-md rounded-[6px] p-8">
+          <h1 className="font-display text-xl font-black uppercase">Database not reachable</h1>
+          <p className="mt-3 text-[13px] leading-relaxed" style={{ color: 'var(--muted)' }}>
+            The lead database could not be reached. Check that <code>DATABASE_URL</code> is set in this
+            environment and that the Neon project is awake.
+          </p>
+          <p className="mt-3 break-words text-[12px]" style={{ color: 'var(--muted)' }}>
+            {err.message}
+          </p>
+        </div>
+      </main>
+    )
+  }
 }

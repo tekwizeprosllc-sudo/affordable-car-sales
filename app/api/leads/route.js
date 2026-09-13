@@ -36,20 +36,27 @@ export async function POST(request) {
     return NextResponse.json({ error: 'That email address looks incomplete.' }, { status: 400 })
   }
 
-  const lead = createLead({
-    type,
-    name,
-    email,
-    phone,
-    message: clean(body.message, MAX),
-    vehicleId: clean(body.vehicleId, 40),
-    vehicleTitle: clean(body.vehicleTitle, 200),
-    preferredDate: clean(body.preferredDate, 40),
-    preferredTime: clean(body.preferredTime, 40),
-    tradeDetails: clean(body.tradeDetails, MAX),
-    creditRange: clean(body.creditRange, 60),
-    source: clean(body.source, 120),
-  })
-
-  return NextResponse.json({ ok: true, id: lead.id })
+  try {
+    const lead = await createLead({
+      type,
+      name,
+      email,
+      phone,
+      message: clean(body.message, MAX),
+      vehicleId: clean(body.vehicleId, 40),
+      vehicleTitle: clean(body.vehicleTitle, 200),
+      preferredDate: clean(body.preferredDate, 40),
+      preferredTime: clean(body.preferredTime, 40),
+      tradeDetails: clean(body.tradeDetails, MAX),
+      creditRange: clean(body.creditRange, 60),
+      source: clean(body.source, 120),
+    })
+    return NextResponse.json({ ok: true, id: lead.id })
+  } catch (err) {
+    console.error('Lead save failed:', err)
+    return NextResponse.json(
+      { error: `We couldn’t save that just now. Please call us at (513) 424-0304.` },
+      { status: 500 }
+    )
+  }
 }

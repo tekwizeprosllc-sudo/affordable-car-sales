@@ -7,12 +7,11 @@ export const dynamic = 'force-dynamic'
 export async function GET(request) {
   if (!isAuthed()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { searchParams } = new URL(request.url)
-  return NextResponse.json({
-    leads: listLeads({
-      status: searchParams.get('status') || undefined,
-      type: searchParams.get('type') || undefined,
-    }),
+  const leads = await listLeads({
+    status: searchParams.get('status') || undefined,
+    type: searchParams.get('type') || undefined,
   })
+  return NextResponse.json({ leads })
 }
 
 export async function PATCH(request) {
@@ -24,7 +23,7 @@ export async function PATCH(request) {
     return NextResponse.json({ error: 'Unknown status.' }, { status: 400 })
   }
 
-  const lead = updateLead(id, { status, notes: typeof notes === 'string' ? notes.slice(0, 2000) : undefined })
+  const lead = await updateLead(id, { status, notes: typeof notes === 'string' ? notes.slice(0, 2000) : undefined })
   if (!lead) return NextResponse.json({ error: 'Lead not found.' }, { status: 404 })
   return NextResponse.json({ ok: true, lead })
 }
