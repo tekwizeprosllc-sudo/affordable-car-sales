@@ -6,10 +6,12 @@ import Hero from '@/components/Hero'
 import StatsBar from '@/components/StatsBar'
 import FeaturedInventory from '@/components/FeaturedInventory'
 import MiddletownPanel from '@/components/MiddletownPanel'
-import { getInventory } from '@/lib/inventory'
+import { getPublicInventory } from '@/lib/inventory'
 import { ROUTES } from '@/lib/site'
 
-export const revalidate = 900
+// Page is dynamic so staff changes show at once; the upstream scrape itself
+// stays cached for 15 minutes inside lib/inventory's fetch.
+export const dynamic = 'force-dynamic'
 
 const PROMISES = [
   { icon: PackageSearch, title: 'More Inventory', copy: 'New arrivals weekly' },
@@ -18,7 +20,7 @@ const PROMISES = [
 ]
 
 export default async function Home() {
-  const { vehicles } = await getInventory()
+  const { vehicles } = await getPublicInventory()
   const featured = vehicles.slice(0, 10)
 
   return (

@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight, ShieldCheck, BadgeDollarSign, HeartHandshake, Car } from 'lucide-react';
 import { ASSETS, ROUTES } from '@/lib/site';
-import AvaPanel from './AvaPanel';
 import HeroSearch from './HeroSearch';
 
 const TRUST = [
@@ -23,7 +22,7 @@ export default function Hero() {
       </div>
 
       <div className="mx-auto max-w-[1400px] px-6">
-        <div className="grid items-start gap-10 lg:grid-cols-[1fr_380px]">
+        <div>
           <div className="pt-6">
             <p className="mb-4 text-[11px] font-extrabold uppercase tracking-eyebrow">
               Great Cars. Real People. <span className="text-accent">A Better Way Forward.</span>
@@ -63,10 +62,6 @@ export default function Hero() {
                 Value Your Trade
               </Link>
             </div>
-          </div>
-
-          <div className="lg:pt-6">
-            <AvaPanel />
           </div>
         </div>
       </div>

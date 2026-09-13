@@ -2,10 +2,12 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import PageHero from '@/components/PageHero'
 import InventoryBrowser from '@/components/InventoryBrowser'
-import { getInventory } from '@/lib/inventory'
+import { getPublicInventory } from '@/lib/inventory'
 import { ASSETS } from '@/lib/site'
 
-export const revalidate = 900
+// Page is dynamic so staff changes show at once; the upstream scrape itself
+// stays cached for 15 minutes inside lib/inventory's fetch.
+export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'Inventory | Affordable Car Sales',
@@ -13,7 +15,7 @@ export const metadata = {
 }
 
 export default async function InventoryPage({ searchParams }) {
-  const { vehicles, live } = await getInventory()
+  const { vehicles, live } = await getPublicInventory()
   const q = typeof searchParams?.q === 'string' ? searchParams.q : ''
 
   return (

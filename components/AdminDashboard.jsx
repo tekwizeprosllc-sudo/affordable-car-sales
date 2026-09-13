@@ -1,10 +1,8 @@
 'use client';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { LogOut, Phone, Mail, Car, RefreshCw } from 'lucide-react';
-import Logo from './Logo';
+import { Phone, Mail, Car, RefreshCw } from 'lucide-react';
 
-const STATUSES = ['new', 'contacted', 'scheduled', 'won', 'closed'];
+const STATUSES = ['new', 'contacted', 'scheduled', 'showed', 'no-show', 'won', 'lost'];
 
 const TYPE_LABELS = {
   test_drive: 'Test Drive',
@@ -18,8 +16,10 @@ const STATUS_COLORS = {
   new: '#E10600',
   contacted: '#E8A33D',
   scheduled: '#3D8BE8',
+  showed: '#2F8FA9',
+  'no-show': '#7A7F87',
   won: '#2FA96B',
-  closed: '#7A7F87',
+  lost: '#7A7F87',
 };
 
 function when(iso) {
@@ -31,7 +31,6 @@ export default function AdminDashboard({ initialLeads, counts }) {
   const [leads, setLeads] = useState(initialLeads);
   const [filter, setFilter] = useState('');
   const [busy, setBusy] = useState(null);
-  const router = useRouter();
 
   const visible = filter ? leads.filter((l) => l.status === filter) : leads;
 
@@ -54,32 +53,15 @@ export default function AdminDashboard({ initialLeads, counts }) {
     if (res.ok) setLeads((await res.json()).leads);
   }
 
-  async function logout() {
-    await fetch('/api/admin/session', { method: 'DELETE' });
-    router.refresh();
-  }
-
   return (
-    <main className="min-h-screen" style={{ background: 'var(--bg)' }}>
-      <header
-        className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-4 px-6 py-4"
-        style={{ background: 'var(--surface)', borderBottom: '1px solid var(--line)' }}
-      >
-        <div className="flex items-center gap-4">
-          <Logo className="h-9" />
-          <span className="font-display text-[15px] font-bold uppercase tracking-[0.14em]">Leads</span>
-        </div>
-        <div className="flex items-center gap-2">
+    <main>
+      <div className="mx-auto max-w-[1400px] px-6 py-8">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <h1 className="font-display text-3xl font-black uppercase">Leads</h1>
           <button onClick={refresh} className="btn-ghost py-2 text-[11px]">
             <RefreshCw size={13} /> Refresh
           </button>
-          <button onClick={logout} className="btn-ghost py-2 text-[11px]">
-            <LogOut size={13} /> Sign Out
-          </button>
         </div>
-      </header>
-
-      <div className="mx-auto max-w-[1400px] px-6 py-8">
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="panel rounded-[5px] p-5">
             <div className="font-display text-[32px] font-black leading-none text-crimson">{counts.total}</div>
