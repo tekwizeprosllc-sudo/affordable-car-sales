@@ -1,4 +1,5 @@
 import './globals.css'
+import AvaScript from '@/components/AvaScript'
 
 export const metadata = {
   title: 'Affordable Car Sales | Used Cars in Middletown, OH',
@@ -22,7 +23,10 @@ export default function RootLayout({ children }) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <AvaScript />
+      </body>
     </html>
   )
 }
