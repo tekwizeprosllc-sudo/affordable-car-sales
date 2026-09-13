@@ -50,7 +50,7 @@ export default function AvaPanel() {
           <p className="mt-1" style={{ color: 'var(--muted)' }}>
             I can help you find the right vehicle, answer questions, schedule a test drive, and more.
           </p>
-          <p className="mt-2 font-semibold text-crimson">What would you like to do today?</p>
+          <p className="mt-2 font-semibold text-accent">What would you like to do today?</p>
         </div>
       </div>
 

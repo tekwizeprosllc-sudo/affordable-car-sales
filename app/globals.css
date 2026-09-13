@@ -13,6 +13,10 @@
   --line: rgba(11, 11, 13, 0.12);
   --line-strong: rgba(11, 11, 13, 0.22);
   --scrim: 246, 246, 248;
+  /* Brand red is #E10600. It clears 3:1 for display type but not 4.5:1 for
+     small text, and it fails in opposite directions per theme — too light on
+     white, too dark on black. Small text uses this shade instead. */
+  --accent-text: #C40500;
 }
 
 .dark {
@@ -24,6 +28,7 @@
   --line: rgba(255, 255, 255, 0.09);
   --line-strong: rgba(255, 255, 255, 0.18);
   --scrim: 11, 11, 13;
+  --accent-text: #FF4A40;
 }
 
 @layer base {
@@ -54,7 +59,13 @@
 
 @layer components {
   .eyebrow {
-    @apply text-[11px] font-extrabold uppercase tracking-eyebrow text-crimson;
+    @apply text-[11px] font-extrabold uppercase tracking-eyebrow;
+    color: var(--accent-text);
+  }
+
+  /* Accessible red for small text; display headings keep brand #E10600. */
+  .text-accent {
+    color: var(--accent-text);
   }
 
   .hairline {
@@ -138,7 +149,16 @@
   }
 
   .field:focus {
-    border-color: rgba(225, 6, 0, 0.6);
+    border-color: rgba(225, 6, 0, 0.75);
+    box-shadow: 0 0 0 3px rgba(225, 6, 0, 0.18);
+  }
+
+  /* Tailwind's default placeholder gray lands at 2.1:1 on our field fill. */
+  .field::placeholder,
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--muted);
+    opacity: 1;
   }
 
   .noise::after {

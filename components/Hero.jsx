@@ -26,7 +26,7 @@ export default function Hero() {
         <div className="grid items-start gap-10 lg:grid-cols-[1fr_380px]">
           <div className="pt-6">
             <p className="mb-4 text-[11px] font-extrabold uppercase tracking-eyebrow">
-              Great Cars. Real People. <span className="text-crimson">A Better Way Forward.</span>
+              Great Cars. Real People. <span className="text-accent">A Better Way Forward.</span>
             </p>
             <h1 className="font-display text-[clamp(3rem,7.2vw,5.6rem)] font-black uppercase leading-[0.86]">
               <span className="chrome-text block">Drive More.</span>

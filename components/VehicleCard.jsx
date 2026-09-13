@@ -57,7 +57,7 @@ export default function VehicleCard({ vehicle, className = '' }) {
             </p>
           </div>
           <div className="shrink-0 text-right font-display text-[22px] font-black leading-none text-crimson">
-            {vehicle.price ? `$${vehicle.price.toLocaleString()}` : <span className="text-[13px]">Call</span>}
+            {vehicle.price ? `$${vehicle.price.toLocaleString()}` : <span className="text-accent text-[13px]">Call</span>}
           </div>
         </div>
 
