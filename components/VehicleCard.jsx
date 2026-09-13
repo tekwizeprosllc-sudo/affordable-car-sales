@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Heart, ArrowRight } from 'lucide-react';
 import { ROUTES } from '@/lib/site';
 import { chipsFor } from '@/lib/vehicleUtils';
+import PhotoComingSoon from './PhotoComingSoon';
 
 export default function VehicleCard({ vehicle, className = '' }) {
   const [saved, setSaved] = useState(false);
@@ -26,14 +27,7 @@ export default function VehicleCard({ vehicle, className = '' }) {
             className="h-full w-full object-cover transition duration-500 [filter:saturate(0.85)_contrast(1.05)] group-hover:scale-[1.05] group-hover:[filter:saturate(1)_contrast(1.05)]"
           />
         ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-center">
-            <span className="font-display text-[15px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--muted)' }}>
-              Photos Coming Soon
-            </span>
-            <span className="text-[11px]" style={{ color: 'var(--muted)' }}>
-              Call for a walkaround
-            </span>
-          </div>
+          <PhotoComingSoon vehicle={vehicle} />
         )}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/15" />
       </Link>

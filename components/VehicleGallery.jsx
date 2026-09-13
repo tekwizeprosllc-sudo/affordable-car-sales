@@ -1,8 +1,9 @@
 'use client';
 import { useState } from 'react';
-import { ArrowLeft, ArrowRight, ImageOff } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
+import PhotoComingSoon from './PhotoComingSoon';
 
-export default function VehicleGallery({ photos = [], title }) {
+export default function VehicleGallery({ photos = [], title, vehicle }) {
   const [index, setIndex] = useState(0);
   const [failed, setFailed] = useState(() => new Set());
 
@@ -11,16 +12,10 @@ export default function VehicleGallery({ photos = [], title }) {
   if (usable.length === 0) {
     return (
       <div
-        className="flex aspect-[16/10] w-full flex-col items-center justify-center gap-2 rounded-[5px]"
-        style={{ background: 'var(--surface-2)', border: '1px solid var(--line)' }}
+        className="aspect-[16/10] w-full overflow-hidden rounded-[5px]"
+        style={{ border: '1px solid var(--line)' }}
       >
-        <ImageOff size={26} style={{ color: 'var(--muted)' }} />
-        <p className="font-display text-[15px] font-bold uppercase tracking-[0.12em]" style={{ color: 'var(--muted)' }}>
-          Photos coming soon
-        </p>
-        <p className="text-[12px]" style={{ color: 'var(--muted)' }}>
-          Call us for a walkaround or stop by the lot.
-        </p>
+        <PhotoComingSoon vehicle={vehicle} size="detail" />
       </div>
     );
   }

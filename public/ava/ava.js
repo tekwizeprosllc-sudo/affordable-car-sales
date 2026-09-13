@@ -323,11 +323,11 @@
 #ava-root{all:initial;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
 #ava-root *{box-sizing:border-box}
 #ava-launcher{position:fixed;right:22px;bottom:22px;z-index:2147483000;display:flex;align-items:center;gap:10px;border:0;background:transparent;cursor:pointer;padding:0}
-#ava-launcher .ava-pill{background:#111;color:#fff;border:1px solid #2a2a2a;border-radius:999px;padding:8px 12px 8px 8px;display:flex;align-items:center;gap:10px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
-#ava-launcher img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid ${CFG.accent}}
+#ava-launcher .ava-pill{background:#111;color:#fff;border:1px solid #2a2a2a;border-radius:999px;padding:6px 18px 6px 6px;display:flex;align-items:center;gap:10px;box-shadow:0 10px 34px rgba(0,0,0,.4);transition:border-color .2s,transform .2s}
+#ava-launcher:hover .ava-pill{border-color:${CFG.accent};transform:translateY(-1px)}
+#ava-launcher img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid ${CFG.accent}}
 #ava-launcher .ava-copy{text-align:left}
-#ava-launcher .ava-copy b{display:block;font-size:13px;letter-spacing:.02em}
-#ava-launcher .ava-copy span{display:block;font-size:11px;color:#bbb}
+#ava-launcher .ava-copy b{display:block;font-size:13px;font-weight:600;letter-spacing:.01em;white-space:nowrap}
 #ava-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;margin-right:4px}
 #ava-overlay{position:fixed;inset:0;z-index:2147482999;background:rgba(0,0,0,.55);opacity:0;visibility:hidden;transition:opacity .28s ease,visibility .28s ease;display:none}
 #ava-overlay.open{opacity:1;visibility:visible}
@@ -397,7 +397,7 @@
       <button id="ava-launcher" type="button" aria-label="Talk with Ava">
         <span class="ava-pill">
           <img src="${esc(CFG.avatar)}" alt="Ava">
-          <span class="ava-copy"><b>Talk with Ava</b><span><i id="keep" class="ava-live"></i><span id="ava-dot"></span>Online · car buying concierge</span></span>
+          <span class="ava-copy"><b>Talk with Ava</b></span>
         </span>
       </button>
       <div id="ava-overlay"></div>

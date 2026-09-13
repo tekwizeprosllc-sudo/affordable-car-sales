@@ -5,11 +5,12 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import VehicleGallery from '@/components/VehicleGallery'
 import LeadForm from '@/components/LeadForm'
+import PaymentEstimator from '@/components/PaymentEstimator'
 import { getVehicle } from '@/lib/inventory'
 import { chipsFor } from '@/lib/vehicleUtils'
 import { DEALER, ROUTES } from '@/lib/site'
 
-export const revalidate = 900
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }) {
   const vehicle = await getVehicle(params.id)
@@ -58,7 +59,7 @@ export default async function VehiclePage({ params }) {
 
         <div className="grid gap-10 lg:grid-cols-[1.55fr_1fr]">
           <div className="min-w-0">
-            <VehicleGallery photos={vehicle.photos} title={title} />
+            <VehicleGallery photos={vehicle.photos} title={title} vehicle={vehicle} />
 
             <div className="mt-8">
               <h2 className="mb-1 font-display text-xl font-black uppercase">Vehicle Details</h2>
@@ -117,6 +118,8 @@ export default async function VehiclePage({ params }) {
                 <Phone size={14} /> {DEALER.phone}
               </a>
             </div>
+
+            <PaymentEstimator price={vehicle.price} />
 
             <div className="panel rounded-[5px] p-6">
               <h2 className="font-display text-lg font-black uppercase">Schedule a Test Drive</h2>

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Phone, Sun, Moon, Menu, X, MessageCircle } from 'lucide-react';
+import { Phone, Sun, Moon, Menu, X } from 'lucide-react';
 import Logo from './Logo';
 import { NAV, DEALER, ROUTES } from '@/lib/site';
 
@@ -69,8 +69,10 @@ export default function Header({ overlay = false }) {
             </span>
           </a>
           <ThemeToggle />
-          <Link href={ROUTES.contact} className="btn-red hidden sm:inline-flex">
-            <MessageCircle size={14} /> Talk With Ava
+          {/* Ava has her own launcher on every page; a second entry point here
+              just competed with it. This slot sells the next step instead. */}
+          <Link href={ROUTES.financing} className="btn-red hidden sm:inline-flex">
+            Get Pre-Approved
           </Link>
           <button
             onClick={() => setOpen((v) => !v)}
@@ -97,8 +99,8 @@ export default function Header({ overlay = false }) {
                 {item.label}
               </Link>
             ))}
-            <Link href={ROUTES.contact} onClick={() => setOpen(false)} className="btn-red mt-4">
-              Talk With Ava
+            <Link href={ROUTES.financing} onClick={() => setOpen(false)} className="btn-red mt-4">
+              Get Pre-Approved
             </Link>
           </div>
         </div>
