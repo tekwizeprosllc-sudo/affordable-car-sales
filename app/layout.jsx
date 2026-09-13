@@ -1,5 +1,6 @@
 import './globals.css'
 import AvaScript from '@/components/AvaScript'
+import CompareProvider from '@/components/CompareProvider'
 
 export const metadata = {
   title: 'Affordable Car Sales | Used Cars in Middletown, OH',
@@ -24,7 +25,7 @@ export default function RootLayout({ children }) {
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
-        {children}
+        <CompareProvider>{children}</CompareProvider>
         <AvaScript />
       </body>
     </html>

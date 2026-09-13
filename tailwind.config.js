@@ -17,7 +17,7 @@ module.exports = {
         graphite: '#141518',
       },
       fontFamily: {
-        sans: ['Manrope', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['"Barlow Condensed"', 'Impact', 'sans-serif'],
         script: ['Caveat', 'cursive'],
       },

@@ -41,9 +41,9 @@ export default function Header({ overlay = false }) {
       className={overlay ? 'absolute inset-x-0 top-0 z-50' : 'sticky top-0 z-50 backdrop-blur'}
       style={overlay ? undefined : { background: 'var(--surface)', borderBottom: '1px solid var(--line)' }}
     >
-      <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-6 px-6 py-4">
+      <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-6 px-6 py-5">
         <Link href={ROUTES.home} aria-label={`${DEALER.name} home`} className="shrink-0">
-          <Logo className="h-11" />
+          <Logo className="h-14" />
         </Link>
 
         <nav className="hidden items-center gap-8 lg:flex">

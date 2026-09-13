@@ -1,12 +1,15 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Heart, ArrowRight } from 'lucide-react';
+import { Heart, ArrowRight, GitCompare } from 'lucide-react';
 import { ROUTES } from '@/lib/site';
 import { chipsFor } from '@/lib/vehicleUtils';
 import PhotoComingSoon from './PhotoComingSoon';
+import { useCompare } from './CompareContext';
 
 export default function VehicleCard({ vehicle, className = '' }) {
+  const { has, toggle: toggleCompare, full } = useCompare();
+  const comparing = has(vehicle.id);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -88,12 +91,26 @@ export default function VehicleCard({ vehicle, className = '' }) {
           </div>
         )}
 
-        <Link
-          href={ROUTES.vehicle(vehicle.id)}
-          className="btn-ghost mt-4 w-full justify-center py-2.5 text-[11px]"
-        >
-          View Details <ArrowRight size={13} />
-        </Link>
+        <div className="mt-4 flex items-center gap-2">
+          <Link
+            href={ROUTES.vehicle(vehicle.id)}
+            className="btn-ghost flex-1 justify-center py-2.5 text-[11px]"
+          >
+            View Details <ArrowRight size={13} />
+          </Link>
+          <button
+            onClick={() => toggleCompare(vehicle.id)}
+            disabled={!comparing && full}
+            title={!comparing && full ? 'Compare holds three at a time' : 'Add to compare'}
+            aria-pressed={comparing}
+            className={`grid h-[42px] w-[42px] shrink-0 place-items-center rounded-[3px] transition disabled:opacity-40 ${
+              comparing ? 'bg-crimson text-white' : 'hover:text-crimson'
+            }`}
+            style={comparing ? undefined : { background: 'var(--surface-2)', border: '1px solid var(--line)', color: 'var(--muted)' }}
+          >
+            <GitCompare size={15} />
+          </button>
+        </div>
       </div>
     </article>
   );

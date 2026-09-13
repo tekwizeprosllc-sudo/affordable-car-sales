@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800;900&family=Caveat:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800;900&family=Caveat:wght@600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -95,10 +95,15 @@
     border-color: rgba(225, 6, 0, 0.75);
     color: #E10600;
     background: var(--surface);
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost:active {
+    transform: translateY(0);
   }
 
   .btn-red {
-    @apply inline-flex items-center justify-center gap-2 rounded-[3px] border border-crimson/70 px-6 py-3 text-[12px] font-extrabold uppercase tracking-[0.14em] text-white transition duration-200;
+    @apply relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-[3px] border border-crimson/70 px-6 py-3 text-[12px] font-extrabold uppercase tracking-[0.14em] text-white transition duration-200;
     background: linear-gradient(180deg, rgba(225, 6, 0, 0.22), rgba(225, 6, 0, 0.06));
     box-shadow: 0 0 0 1px rgba(225, 6, 0, 0.25), 0 0 28px -8px rgba(225, 6, 0, 0.8);
   }
@@ -106,6 +111,36 @@
   .btn-red:hover {
     background: linear-gradient(180deg, #E10600, #B30500);
     box-shadow: 0 0 34px -6px rgba(225, 6, 0, 0.95);
+    transform: translateY(-1px);
+  }
+
+  .btn-red:active {
+    transform: translateY(0);
+  }
+
+  /* Light sweep across the button on hover. */
+  .btn-red::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -60%;
+    width: 40%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+    transform: skewX(-18deg);
+    opacity: 0;
+    transition: left 0.55s ease, opacity 0.2s ease;
+    pointer-events: none;
+  }
+
+  .btn-red:hover::after {
+    left: 120%;
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn-red::after { display: none; }
+    .btn-red:hover, .btn-ghost:hover { transform: none; }
   }
 
   :root:not(.dark) .btn-red {
