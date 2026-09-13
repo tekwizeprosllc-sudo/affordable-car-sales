@@ -26,7 +26,8 @@ export default function ContactPage({ searchParams }) {
           title="Come See Us."
           accent="We're Local."
           copy="Questions, directions, or you just want to talk to a person before driving over — we're here six days a week."
-          image={ASSETS.storefrontNight}
+          image={ASSETS.dealershipDusk}
+          focal="82% center"
         />
 
         <div className="mx-auto grid max-w-[1400px] gap-10 px-6 py-14 lg:grid-cols-[1fr_460px]">
@@ -61,7 +62,15 @@ export default function ContactPage({ searchParams }) {
             </div>
 
             <div className="mt-5 overflow-hidden rounded-[5px]" style={{ border: '1px solid var(--line)' }}>
-              <img src={ASSETS.dealershipDusk} alt={`${DEALER.name} storefront`} className="h-full w-full object-cover" />
+              <iframe
+                title={`Map to ${DEALER.name}`}
+                src={`https://www.google.com/maps?q=${encodeURIComponent(
+                  `${DEALER.address}, ${DEALER.city}, ${DEALER.state} ${DEALER.zip}`
+                )}&output=embed`}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="h-[320px] w-full border-0"
+              />
             </div>
           </div>
 

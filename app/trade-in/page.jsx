@@ -25,7 +25,8 @@ export default function TradeInPage() {
           title="Your Trade."
           accent="Real Numbers."
           copy="We'd rather give you a fair number than waste your afternoon. Tell us what you're driving and we'll get you an honest offer."
-          image={ASSETS.dealershipDusk}
+          image={ASSETS.dealershipMustang}
+          focal="18% center"
         />
 
         <div className="mx-auto grid max-w-[1400px] gap-10 px-6 py-14 lg:grid-cols-[1fr_460px]">

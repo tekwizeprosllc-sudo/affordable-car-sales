@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Heart, ArrowRight } from 'lucide-react';
 import { ROUTES } from '@/lib/site';
@@ -8,6 +8,25 @@ import PhotoComingSoon from './PhotoComingSoon';
 
 export default function VehicleCard({ vehicle, className = '' }) {
   const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    try {
+      const list = JSON.parse(localStorage.getItem('acs_saved') || '[]');
+      setSaved(list.includes(vehicle.id));
+    } catch (e) {}
+  }, [vehicle.id]);
+
+  const toggleSaved = () => {
+    setSaved((was) => {
+      const next = !was;
+      try {
+        const list = JSON.parse(localStorage.getItem('acs_saved') || '[]');
+        const updated = next ? [...new Set([...list, vehicle.id])] : list.filter((id) => id !== vehicle.id);
+        localStorage.setItem('acs_saved', JSON.stringify(updated));
+      } catch (e) {}
+      return next;
+    });
+  };
   const [broken, setBroken] = useState(false);
   const title = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
   const chips = chipsFor(vehicle);
@@ -33,7 +52,7 @@ export default function VehicleCard({ vehicle, className = '' }) {
       </Link>
 
       <button
-        onClick={() => setSaved((v) => !v)}
+        onClick={toggleSaved}
         aria-label={saved ? `Remove ${title} from saved` : `Save ${title}`}
         className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-black/55 text-white backdrop-blur transition hover:bg-crimson"
       >

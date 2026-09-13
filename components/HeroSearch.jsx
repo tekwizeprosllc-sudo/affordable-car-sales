@@ -26,7 +26,7 @@ export default function HeroSearch() {
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search makes, models, or keywords…"
           aria-label="Search inventory"
-          className="w-full bg-transparent py-3.5 text-[14px] outline-none"
+          className="w-full bg-transparent py-3.5 text-[14px] outline-none placeholder:text-[color:var(--muted)]"
         />
       </div>
       <button type="submit" className="btn-red shrink-0">

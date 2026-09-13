@@ -28,6 +28,7 @@ export default function AboutPage() {
           accent="Same Streets."
           copy="We're a Middletown lot, not a national chain with a call center. Ten-plus years of getting our neighbors into cars that actually make sense."
           image={ASSETS.storefrontNight}
+          focal="center 40%"
         />
 
         <section className="mx-auto max-w-[1400px] px-6 py-14">

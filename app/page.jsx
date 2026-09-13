@@ -21,7 +21,9 @@ const PROMISES = [
 
 export default async function Home() {
   const { vehicles } = await getPublicInventory()
-  const featured = vehicles.slice(0, 10)
+  // A strip full of "images coming soon" costs more trust than a shorter strip.
+  const withPhotos = vehicles.filter((v) => v.image)
+  const featured = (withPhotos.length >= 4 ? withPhotos : vehicles).slice(0, 10)
 
   return (
     <>

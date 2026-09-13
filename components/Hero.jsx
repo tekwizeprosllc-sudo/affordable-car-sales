@@ -4,7 +4,7 @@ import { ASSETS, ROUTES } from '@/lib/site';
 import HeroSearch from './HeroSearch';
 
 const TRUST = [
-  { icon: ShieldCheck, title: 'Quality Inspected', copy: '182-Point Inspection' },
+  { icon: ShieldCheck, title: 'Quality Inspected', copy: 'Checked before it lists' },
   { icon: BadgeDollarSign, title: 'Transparent Pricing', copy: 'No Hidden Fees' },
   { icon: HeartHandshake, title: 'Flexible Financing', copy: 'All Credit Types Welcome' },
   { icon: Car, title: 'Trade-Ins Welcome', copy: 'Get a Real Offer Today' },

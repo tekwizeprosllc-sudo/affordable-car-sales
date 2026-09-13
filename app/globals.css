@@ -17,6 +17,8 @@
      small text, and it fails in opposite directions per theme — too light on
      white, too dark on black. Small text uses this shade instead. */
   --accent-text: #C40500;
+  --ghost-bg: rgba(255, 255, 255, 0.92);
+  --ghost-line: rgba(11, 11, 13, 0.34);
 }
 
 .dark {
@@ -29,6 +31,8 @@
   --line-strong: rgba(255, 255, 255, 0.18);
   --scrim: 11, 11, 13;
   --accent-text: #FF4A40;
+  --ghost-bg: rgba(20, 21, 24, 0.82);
+  --ghost-line: rgba(255, 255, 255, 0.28);
 }
 
 @layer base {
@@ -77,15 +81,20 @@
     border: 1px solid var(--line);
   }
 
+  /* A transparent ghost button vanished over the light hero photo. It carries
+     its own surface now so it reads as a control on any background. */
   .btn-ghost {
-    border: 1px solid var(--line-strong);
+    border: 1px solid var(--ghost-line);
+    background: var(--ghost-bg);
     color: var(--fg);
+    backdrop-filter: blur(6px);
     @apply inline-flex items-center justify-center gap-2 rounded-[3px] px-6 py-3 text-[12px] font-extrabold uppercase tracking-[0.14em] transition duration-200;
   }
 
   .btn-ghost:hover {
     border-color: rgba(225, 6, 0, 0.75);
     color: #E10600;
+    background: var(--surface);
   }
 
   .btn-red {

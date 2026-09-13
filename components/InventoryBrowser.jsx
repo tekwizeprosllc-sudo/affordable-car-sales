@@ -47,7 +47,7 @@ export default function InventoryBrowser({ vehicles, initialQuery = '' }) {
                 onChange={(e) => set('q', e.target.value)}
                 placeholder="Search inventory…"
                 aria-label="Search inventory"
-                className="w-full bg-transparent py-2.5 text-[13px] outline-none"
+                className="w-full bg-transparent py-2.5 text-[13px] outline-none placeholder:text-[color:var(--muted)]"
               />
             </div>
 
@@ -58,10 +58,10 @@ export default function InventoryBrowser({ vehicles, initialQuery = '' }) {
                   <button
                     key={key}
                     onClick={() => set('category', on ? '' : key)}
-                    className={`rounded-[3px] py-2 text-[10px] font-extrabold uppercase tracking-[0.08em] transition ${
+                    className={`min-h-[40px] rounded-[3px] px-1 py-2 text-[10px] font-extrabold uppercase tracking-[0.08em] transition ${
                       on ? 'bg-crimson text-white' : 'hover:text-crimson'
                     }`}
-                    style={on ? undefined : { background: 'var(--surface-2)', color: 'var(--muted)' }}
+                    style={on ? undefined : { background: 'var(--surface-2)', color: 'var(--muted)', border: '1px solid var(--line)' }}
                   >
                     {label}
                   </button>

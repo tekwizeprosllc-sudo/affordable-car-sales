@@ -66,8 +66,14 @@ export default function Footer() {
         <p>
           &copy; {new Date().getFullYear()} {DEALER.name}
         </p>
-        <p>
-          {DEALER.city}, Ohio · {DEALER.coords.lat} {DEALER.coords.lon}
+        <p className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <span>
+            {DEALER.address}, {DEALER.city}, {DEALER.state} {DEALER.zip}
+          </span>
+          <span>{DEALER.hours}</span>
+          <Link href={ROUTES.privacy} className="underline-offset-2 transition hover:text-crimson hover:underline">
+            Privacy
+          </Link>
         </p>
       </div>
     </footer>

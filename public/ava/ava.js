@@ -15,6 +15,7 @@
     endpoint: (SCRIPT && SCRIPT.getAttribute("data-endpoint")) || "",
     voiceBase: (SCRIPT && SCRIPT.getAttribute("data-voice-base")) || "/ava/voice/",
     leads: (SCRIPT && SCRIPT.getAttribute("data-leads")) || "/api/leads",
+    inventory: (SCRIPT && SCRIPT.getAttribute("data-inventory")) || "",
   };
 
   const LINES = {
@@ -63,8 +64,8 @@
     return { html: item.html, voice: item.voice };
   }
 
-  // TODO: fetch /api/inventory/public — this demo list will drift from the real
-  // lot. Swap it in without touching the matcher, which keys off type/tags/price.
+  // Demo rows below are a fallback only. loadInventory() swaps in the real lot
+  // as soon as it answers, mutating in place so the matcher keeps its reference.
   const CARS = [
     { id: "rav4", year: 2022, make: "Toyota", model: "RAV4 XLE AWD", price: 25995, miles: 32451, type: "suv", tags: ["awd", "mpg", "one owner"], hook: "Reliable, cute in a driveway, won't make you look like you're compensating." },
     { id: "bmw5", year: 2021, make: "BMW", model: "5 Series 530i xDrive", price: 28995, miles: 41209, type: "sedan", tags: ["awd", "luxury", "clean carfax"], hook: "Quiet flex. The kind of car that makes the valet stand up straighter." },
@@ -78,6 +79,21 @@
 
   // mount() owns postLead; replyTo lives outside it and still needs to fire.
   let postLeadFn = null;
+
+  function loadInventory() {
+    if (!CFG.inventory) return;
+    fetch(CFG.inventory, { headers: { Accept: "application/json" } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data || !Array.isArray(data.cars) || !data.cars.length) return;
+        // Keep only cars we can actually talk about: a price and a real name.
+        const usable = data.cars.filter(function (c) { return c.make && c.model; });
+        if (!usable.length) return;
+        CARS.length = 0;
+        Array.prototype.push.apply(CARS, usable);
+      })
+      .catch(function () {});
+  }
 
   const state = {
     open: false,
@@ -697,6 +713,7 @@
     };
   }
 
+  loadInventory();
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount);
   else mount();
 })();

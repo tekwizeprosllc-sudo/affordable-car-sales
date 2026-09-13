@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, Phone, Gauge, Cog, Fuel, Palette, Hash, Car } from 'lucide-react'
+import { ArrowLeft, Phone, MessageSquare, Gauge, Cog, Fuel, Palette, Hash, Car } from 'lucide-react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import VehicleGallery from '@/components/VehicleGallery'
@@ -16,11 +16,26 @@ export async function generateMetadata({ params }) {
   const vehicle = await getVehicle(params.id)
   if (!vehicle) return { title: 'Vehicle not found | Affordable Car Sales' }
   const title = `${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim || ''}`.trim()
+  const description = `${title} for sale in Middletown, OH. ${
+    vehicle.mileage ? `${vehicle.mileage.toLocaleString()} miles.` : ''
+  } ${vehicle.price ? `$${vehicle.price.toLocaleString()}.` : ''}`.trim()
+  const image = vehicle.photos?.[0] || vehicle.image || null
+
   return {
     title: `${title} | Affordable Car Sales`,
-    description: `${title} for sale in Middletown, OH. ${
-      vehicle.mileage ? `${vehicle.mileage.toLocaleString()} miles.` : ''
-    } ${vehicle.price ? `$${vehicle.price.toLocaleString()}.` : ''}`.trim(),
+    description,
+    openGraph: {
+      title: `${title} — $${vehicle.price ? vehicle.price.toLocaleString() : 'Call'}`,
+      description,
+      type: 'website',
+      images: image ? [{ url: image }] : undefined,
+    },
+    twitter: {
+      card: image ? 'summary_large_image' : 'summary',
+      title: `${title} | Affordable Car Sales`,
+      description,
+      images: image ? [image] : undefined,
+    },
   }
 }
 
@@ -114,8 +129,16 @@ export default async function VehiclePage({ params }) {
                 </div>
               )}
 
-              <a href={DEALER.phoneHref} className="btn-ghost mt-5 w-full">
-                <Phone size={14} /> {DEALER.phone}
+              <a href={DEALER.phoneHref} className="btn-red mt-5 w-full">
+                <Phone size={14} /> Call for a walkaround
+              </a>
+              <a
+                href={`sms:${DEALER.phoneHref.replace('tel:', '')}?&body=${encodeURIComponent(
+                  `Hi — I'm interested in the ${title}${vehicle.stock ? ` (stock ${vehicle.stock})` : ''}. Is it still available?`
+                )}`}
+                className="btn-ghost mt-2 w-full"
+              >
+                <MessageSquare size={14} /> Text me about this car
               </a>
             </div>
 

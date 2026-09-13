@@ -32,7 +32,10 @@ export default function PaymentEstimator({ price }) {
             ${financed > 0 ? Math.round(payment).toLocaleString() : 0}
           </div>
           <div className="mt-1 text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--muted)' }}>
-            per month · estimated
+            per month
+          </div>
+          <div className="mt-1 text-[11px] font-semibold" style={{ color: 'var(--muted)' }}>
+            Estimate, not a quote
           </div>
         </div>
         <div className="text-right text-[12px]" style={{ color: 'var(--muted)' }}>

@@ -25,6 +25,7 @@ export default function AvaScript() {
       data-greeting="/ava/ava-hello.mp3"
       data-voice-base="/ava/voice/"
       data-leads="/api/leads"
+      data-inventory="/api/inventory/public"
     />
   );
 }
