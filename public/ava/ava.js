@@ -5,20 +5,66 @@
   const SCRIPT = document.currentScript;
   const CFG = {
     name: (SCRIPT && SCRIPT.getAttribute("data-dealer")) || "Affordable Car Sales",
-    phone: (SCRIPT && SCRIPT.getAttribute("data-phone")) || "(513) 217-6880",
+    phone: (SCRIPT && SCRIPT.getAttribute("data-phone")) || "(513) 424-0304",
     hours: (SCRIPT && SCRIPT.getAttribute("data-hours")) || "Mon–Sat 9am–7pm",
     city: (SCRIPT && SCRIPT.getAttribute("data-city")) || "Middletown, OH",
-    avatar: (SCRIPT && SCRIPT.getAttribute("data-avatar")) || "./ava.jpg",
+    avatar: (SCRIPT && SCRIPT.getAttribute("data-avatar")) || "/ava/ava.jpg",
     accent: (SCRIPT && SCRIPT.getAttribute("data-accent")) || "#E10600",
     voice: ((SCRIPT && SCRIPT.getAttribute("data-voice")) || "on") !== "off",
     greetingMp3: (SCRIPT && SCRIPT.getAttribute("data-greeting")) || "/ava/ava-hello.mp3",
     endpoint: (SCRIPT && SCRIPT.getAttribute("data-endpoint")) || "",
     voiceBase: (SCRIPT && SCRIPT.getAttribute("data-voice-base")) || "/ava/voice/",
+    leads: (SCRIPT && SCRIPT.getAttribute("data-leads")) || "/api/leads",
   };
 
+  const LINES = {
+    extra: [
+      { html: "Slow day on the lot until you showed up. SUV, truck, or something that makes the neighbors talk?", voice: "extra1-v1" },
+      { html: "I'm not a search bar. Give me a budget or a body style and I'll hunt.", voice: "extra2-v1" },
+      { html: "If you're just browsing, browse louder. What's the monthly number you can live with?", voice: "extra3-v1" },
+      { html: "Easy version: kids / no kids / dog / commute. I'll pick from there.", voice: "extra4-v1" },
+      { html: "I have patience. Not infinite. Year, budget, or just say surprise me.", voice: "extra5-v1" },
+    ],
+    hello: [
+      { html: "Hey. I'm Ava. I sell cars and I don't do the fake-smile thing. Budget, body style, or are we being chaotic and starting with whatever's loudest on the lot?", voice: "hello1-v1" },
+      { html: "Hi. Ava. Don't overthink it. Tell me what you drive now and what you wish it did.", voice: "hello2-v1" },
+      { html: "You're here. Good. SUV, truck, cheap and clean, or we going looking trouble?", voice: "hello3-v1" },
+      { html: "Hey you. I find the car and I skip the sermon. What are we getting into?", voice: "hello4-v1" },
+      { html: "Ava. Online. Bored until you give me a budget. Start talking.", voice: "hello5-v1" },
+    ],
+    booked: [
+      { html: "Got it. I'll have the lot text you about the test drive. If they take more than twenty minutes, they're scared of me. Call the desk if you want to skip the middleman.", voice: "booked1-v1" },
+      { html: "Locked in. Someone on the floor will ping you. If your phone stays quiet, call the lot. I already did my part.", voice: "booked2-v1" },
+      { html: "You're on the board. Bring your license and the car you want to cheat on. We'll handle the rest.", voice: "booked3-v1" },
+      { html: "Done. I sent it through. Don't ghost us. That car will not wait around looking pretty for fun.", voice: "booked4-v1" },
+      { html: "Okay. Name's in. Number's in. Now show up. I look stupid when people book and vanish.", voice: "booked5-v1" },
+    ],
+    trade: [
+      { html: "Trade-ins are my love language. Fill this out — year, miles, and how honest you want to be about the dents. I'll ballpark it.", voice: "trade1-v1" },
+      { html: "Okay. We'll put a number on that thing you want to stop feeding. Year, make, miles. Use the form.", voice: "trade2-v1" },
+      { html: "Trade time. Don't romance the book value. Tell me what it is and I'll tell you what it's worth on this lot.", voice: "trade3-v1" },
+      { html: "I can range it from here. Real check happens when we see it. Form's right there. Don't make me beg.", voice: "trade4-v1" },
+      { html: "Slide me the year and the miles. I'll be nicer than the internet and meaner than your cousin who knows a guy.", voice: "trade5-v1" },
+    ],
+    finance: [
+      { html: "Financing is the boring part I still crush. All credit types. Tell me a monthly number you can live with and I'll aim a car at it.", voice: "finance1-v1" },
+      { html: "We work with all credit. I said all. Give me a monthly and stop pretending FICO is a personality.", voice: "finance2-v1" },
+      { html: "Payments I can do. Say pre-approve me if you want me to grab your name, or just throw a monthly number.", voice: "finance3-v1" },
+    ],
+    drive: [
+      { html: "Yes. Life is short and that car looks better with you in it. First name and I'll put you on the board.", voice: "drive1-v1" },
+      { html: "Let's drive it before you talk yourself out of it. First name. I'll save the slot.", voice: "drive2-v1" },
+      { html: "Test drive. Good. Name, then we stop dating the listing photos.", voice: "drive3-v1" },
+    ],
+  };
+  function pickLine(family) {
+    const set = LINES[family];
+    const item = set[Math.floor(Math.random() * set.length)];
+    return { html: item.html, voice: item.voice };
+  }
+
   // TODO: fetch /api/inventory/public — this demo list will drift from the real
-  // lot. Swap it in without touching the matcher below, which keys off
-  // type/tags/price rather than these specific records.
+  // lot. Swap it in without touching the matcher, which keys off type/tags/price.
   const CARS = [
     { id: "rav4", year: 2022, make: "Toyota", model: "RAV4 XLE AWD", price: 25995, miles: 32451, type: "suv", tags: ["awd", "mpg", "one owner"], hook: "Reliable, cute in a driveway, won't make you look like you're compensating." },
     { id: "bmw5", year: 2021, make: "BMW", model: "5 Series 530i xDrive", price: 28995, miles: 41209, type: "sedan", tags: ["awd", "luxury", "clean carfax"], hook: "Quiet flex. The kind of car that makes the valet stand up straighter." },
@@ -30,12 +76,14 @@
     { id: "f150", year: 2020, make: "Ford", model: "F-150 XLT 4x4", price: 26495, miles: 61200, type: "truck", tags: ["4x4", "work", "tow"], hook: "The truck your neighbor already regrets not buying." },
   ];
 
+  // mount() owns postLead; replyTo lives outside it and still needs to fire.
+  let postLeadFn = null;
+
   const state = {
     open: false,
     messages: [],
     pendingLead: null,
-    lead: { name: "", phone: "", intent: "", vehicleTitle: "" },
-    leadSent: false,
+    lead: { name: "", phone: "", intent: "", vehicleLabel: "" },
     listening: false,
     muted: !CFG.voice,
     voiceReady: false,
@@ -182,43 +230,11 @@
     return CARS.find((c) => t.includes(c.id) || t.includes(c.model.split(" ")[0].toLowerCase()) && t.includes(c.make.toLowerCase())) || null;
   }
 
-  // Hand the captured name and phone to the dealer's CRM. Fire and forget: if
-  // the desk is unreachable the shopper should never see it or be held up.
-  function sendLead() {
-    if (state.leadSent) return;
-    const lead = state.lead;
-    if (!lead.name || !lead.phone) return;
-    state.leadSent = true;
-
-    const intent = (lead.intent || "").toLowerCase();
-    let type = "contact";
-    if (intent.indexOf("test drive") !== -1) type = "test_drive";
-    else if (intent.indexOf("financ") !== -1 || intent.indexOf("approval") !== -1) type = "financing";
-    else if (intent.indexOf("trade") !== -1) type = "trade_in";
-
-    try {
-      fetch("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        keepalive: true,
-        body: JSON.stringify({
-          type: type,
-          name: lead.name,
-          phone: lead.phone,
-          source: "ava",
-          vehicleTitle: lead.vehicleTitle || "",
-          message: lead.intent ? "Asked Ava about: " + lead.intent : "Started a chat with Ava",
-        }),
-      }).catch(function () {});
-    } catch (e) {}
-  }
-
   function replyTo(text) {
     const t = (text || "").trim();
     const low = t.toLowerCase();
 
     if (state.pendingLead === "name") {
-      state.leadSent = false;
       state.lead.name = t.split(/\s+/).slice(0, 3).join(" ");
       state.pendingLead = "phone";
       return { html: "Cute name. Now the number I actually need — cell is fine. I don't do landlines in " + new Date().getFullYear() + ".", voice: "name" };
@@ -226,27 +242,21 @@
     if (state.pendingLead === "phone") {
       state.lead.phone = t;
       state.pendingLead = null;
-      sendLead();
-      return {
-        html:
-          "Got it, " +
-          esc(state.lead.name) +
-          ". I'll have the lot text you at " +
-          esc(state.lead.phone) +
-          " about <b>" +
-          esc(state.lead.intent || "a test drive") +
-          "</b>. If they take more than 20 minutes, they're scared of me. " +
-          CFG.phone +
-          " if you want to skip the middleman.",
-        voice: "booked",
-      };
+      if (postLeadFn) {
+        postLeadFn({
+          source: "ava",
+          intent: state.lead.intent || "test drive",
+          name: state.lead.name,
+          phone: state.lead.phone,
+          vehicleLabel: state.lead.vehicleLabel || "",
+          status: "new",
+        });
+      }
+      return pickLine("booked");
     }
 
     if (/^(hi|hey|hello|yo|sup|howdy|what's up|whats up)\b/.test(low) || low.length < 3) {
-      return {
-        html: "Hey. I'm Ava. I sell cars and I don't do the fake-smile thing. Budget, body style, or are we being chaotic and starting with whatever's loudest on the lot?",
-        voice: "hello",
-      };
+      return pickLine("hello");
     }
 
     if (/\b(hours|open|close|location|address|where are you)\b/.test(low)) {
@@ -275,12 +285,7 @@
     }
 
     if (/\b(financ|loan|credit|payment|apr|approved)\b/.test(low)) {
-      return {
-        html:
-          "Financing is the boring part I still crush. All credit types — I said all, not 'perfect FICO and a pastor reference.' " +
-          "Tell me a monthly number you can live with and I'll aim a car at it. Or say <b>pre-approve me</b> and I'll grab your name.",
-        voice: "finance",
-      };
+      return pickLine("finance");
     }
 
     if (/\b(pre-?approve)\b/.test(low)) {
@@ -290,11 +295,9 @@
     }
 
     if (/\b(trade|trade-?in|what.?s my .*worth|value my)\b/.test(low)) {
-      return {
-        html:
-          "Trade-ins are my love language. Year, make, model, miles, and whether it's been… loved. I'll give you a range, not a fairy tale. Then we put that number against something prettier.",
-        voice: "trade",
-      };
+      const line = pickLine("trade");
+      line.form = "trade";
+      return line;
     }
 
     if (/\b(test drive|testdrive|drive it|come see|schedule|appointment|book)\b/.test(low)) {
@@ -302,15 +305,10 @@
       const pick = hit[0] || CARS[4];
       state.pendingLead = "name";
       state.lead.intent = "test drive — " + title(pick);
-      state.lead.vehicleTitle = title(pick);
-      return {
-        html:
-          "Yes. Life is short and that " +
-          pick.make +
-          " looks better with you in it. First name and I'll put you on the board.",
-        cars: [pick],
-        voice: "drive",
-      };
+      state.lead.vehicleLabel = title(pick);
+      const line = pickLine("drive");
+      line.cars = [pick];
+      return line;
     }
 
     if (/\b(flirt|sexy|hot|beautiful|pretty|date|number)\b/.test(low) && !/\bvin|stock\b/.test(low)) {
@@ -345,11 +343,7 @@
       return { html: "Prices are on the cars, not a mystery novel. Tell me a ceiling and I'll stop showing you the ones that will hurt.", cars: CARS.slice(0, 3), voice: "price" };
     }
 
-    return {
-      html:
-        "I sell cars, not riddles. Try me with something like <i>SUV under 30k</i>, <i>book a drive</i>, <i>trade in my 2016 Civic</i>, or <i>what finances look like</i>. I'll do the rest.",
-      voice: "fallback",
-    };
+    return pickLine("extra");
   }
 
   function injectStyles() {
@@ -398,12 +392,13 @@
 #ava-form input{flex:1;background:#141416;border:1px solid #333;border-radius:999px;color:#fff;padding:10px 14px;font-size:13px;outline:none}
 #ava-form input:focus{border-color:${CFG.accent}}
 #ava-form button{width:42px;height:42px;border:0;border-radius:50%;background:${CFG.accent};color:#fff;font-size:16px;cursor:pointer}
-#ava-mic{width:42px;height:42px;border:1px solid #333;border-radius:50%;background:#141416;color:#ddd;font-size:16px;cursor:pointer;flex:0 0 42px}
 #ava-mute{width:34px;height:34px;border:1px solid #333;border-radius:50%;background:#141416;color:#ddd;font-size:14px;cursor:pointer;flex:0 0 34px}
-#ava-mic.hot{background:${CFG.accent};border-color:${CFG.accent};color:#fff;box-shadow:0 0 0 6px rgba(225,6,0,.25)}
 #ava-mute.on{color:${CFG.accent};border-color:${CFG.accent}}
-.ava-wave{display:none;align-items:center;gap:3px;padding:0 12px 8px;color:#aaa;font-size:11px}
-.ava-wave.show{display:flex}
+.ava-trade{width:100%;max-width:100%;background:#141416;border:1px solid #2c2c2c;border-radius:12px;padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.ava-trade label{display:flex;flex-direction:column;gap:4px;font-size:10px;color:#aaa;letter-spacing:.04em;text-transform:uppercase}
+.ava-trade label.wide{grid-column:1/-1}
+.ava-trade input,.ava-trade select{background:#0b0b0d;border:1px solid #333;border-radius:8px;color:#fff;padding:8px;font-size:13px}
+.ava-trade button{grid-column:1/-1;background:${CFG.accent};border:0;color:#fff;border-radius:8px;padding:10px;cursor:pointer;font-weight:700}
 .ava-wave i{display:inline-block;width:3px;height:10px;background:${CFG.accent};border-radius:2px;animation:avaeq 0.7s infinite ease-in-out}
 .ava-wave i:nth-child(2){animation-delay:.1s;height:16px}
 .ava-wave i:nth-child(3){animation-delay:.2s;height:8px}
@@ -456,10 +451,8 @@
           <button data-q="What's my trade worth">Trade-in</button>
           <button data-q="Financing questions">Financing</button>
         </div>
-        <div class="ava-wave" id="ava-wave"><i></i><i></i><i></i><i></i><span id="ava-live">Listening…</span></div>
         <form id="ava-form" autocomplete="off">
-          <button type="button" id="ava-mic" title="Talk to Ava" aria-label="Microphone">🎤</button>
-          <input id="ava-input" placeholder="Ask Ava anything… or tap the mic" maxlength="240">
+          <input id="ava-input" placeholder="Type or tap a button…" maxlength="240">
           <button type="submit" aria-label="Send">➤</button>
         </form>
       </div>`;
@@ -470,10 +463,7 @@
     const msgs = root.querySelector("#ava-msgs");
     const input = root.querySelector("#ava-input");
 
-    const micBtn = root.querySelector("#ava-mic");
     const muteBtn = root.querySelector("#ava-mute");
-    const wave = root.querySelector("#ava-wave");
-    const live = root.querySelector("#ava-live");
     let greeted = false;
 
     function setMuteUI() {
@@ -496,56 +486,13 @@
       state.open = false;
       panel.classList.remove("open");
       if (overlay) overlay.classList.remove("open");
-      Voice.haltListen();
       Voice.stop();
-      micBtn.classList.remove("hot");
-      wave.classList.remove("show");
-      state.listening = false;
     }
 
     muteBtn.addEventListener("click", () => {
       state.muted = !state.muted;
       setMuteUI();
       if (state.muted) Voice.stop();
-    });
-
-    micBtn.addEventListener("click", () => {
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) {
-        input.placeholder = "Voice in needs Chrome / Safari / Edge";
-        return;
-      }
-      if (state.listening) {
-        Voice.haltListen();
-        state.listening = false;
-        micBtn.classList.remove("hot");
-        wave.classList.remove("show");
-        return;
-      }
-      state.listening = true;
-      micBtn.classList.add("hot");
-      wave.classList.add("show");
-      live.textContent = "Listening…";
-      Voice.listen(
-        function (text, isFinal) {
-          input.value = text;
-          live.textContent = text || "Listening…";
-          if (isFinal && text.trim()) {
-            const v = text.trim();
-            input.value = "";
-            Voice.haltListen();
-            state.listening = false;
-            micBtn.classList.remove("hot");
-            wave.classList.remove("show");
-            send(v);
-          }
-        },
-        function () {
-          state.listening = false;
-          micBtn.classList.remove("hot");
-          wave.classList.remove("show");
-        }
-      );
     });
 
     root.querySelector("#ava-launcher").addEventListener("click", () => (state.open ? close() : open()));
@@ -598,11 +545,93 @@
       msgs.scrollTop = msgs.scrollHeight;
     }
 
+    function postLead(payload) {
+      if (!CFG.leads) return;
+      fetch(CFG.leads, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }).catch(function () {});
+    }
+    postLeadFn = postLead;
+
+    function ballpark(year, miles, condition) {
+      const age = Math.max(0, new Date().getFullYear() - (parseInt(year, 10) || 2015));
+      const mi = parseInt(String(miles).replace(/[^\d]/g, ""), 10) || 120000;
+      let n = 14000 - age * 700 - Math.max(0, mi - 80000) / 18;
+      if (condition === "rough") n *= 0.62;
+      if (condition === "fair") n *= 0.8;
+      if (condition === "clean") n *= 1;
+      if (condition === "extra") n *= 1.12;
+      n = Math.max(800, Math.min(28000, n));
+      const low = Math.round(n * 0.82 / 100) * 100;
+      const high = Math.round(n * 1.08 / 100) * 100;
+      return { low, high };
+    }
+
+    function mountTradeForm() {
+      if (msgs.querySelector("#ava-trade-form")) return;
+      const row = document.createElement("div");
+      row.className = "ava-row ava";
+      row.innerHTML =
+        '<form class="ava-trade" id="ava-trade-form">' +
+        '<label>Year<input name="year" required inputmode="numeric" placeholder="2016"></label>' +
+        '<label>Miles<input name="miles" required inputmode="numeric" placeholder="98000"></label>' +
+        '<label>Make<input name="make" required placeholder="Honda"></label>' +
+        '<label>Model<input name="model" required placeholder="Civic"></label>' +
+        '<label class="wide">Condition<select name="condition"><option value="clean">Clean — one owner energy</option><option value="fair">Fair — honest miles</option><option value="rough">Rough — it lived a life</option><option value="extra">Extra clean</option></select></label>' +
+        '<label>Your name<input name="name" placeholder="First name"></label>' +
+        '<label>Cell<input name="phone" placeholder="513…"></label>' +
+        '<button type="submit">Get my range</button></form>';
+      msgs.appendChild(row);
+      msgs.scrollTop = msgs.scrollHeight;
+      row.querySelector("form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const f = e.target;
+        const year = f.year.value.trim();
+        const make = f.make.value.trim();
+        const model = f.model.value.trim();
+        const miles = f.miles.value.trim();
+        const condition = f.condition.value;
+        const name = f.name.value.trim();
+        const phone = f.phone.value.trim();
+        const label = year + " " + make + " " + model;
+        const range = ballpark(year, miles, condition);
+        f.querySelector("button").disabled = true;
+        addRow("me", esc(label + " · " + miles + " mi"));
+        const html =
+          "On a " +
+          esc(label) +
+          " with " +
+          esc(miles) +
+          " miles, I'd shop it around <b>" +
+          money(range.low) +
+          "–" +
+          money(range.high) +
+          "</b> before we put eyes on it. That's a range, not a check. Bring it in and I'll get you a number you can actually use. Want me to put you on the board?";
+        addRow("ava", html);
+        Voice.speak(html, "trade");
+        postLead({
+          source: "ava",
+          intent: "trade-in",
+          name: name || state.lead.name || "",
+          phone: phone || state.lead.phone || "",
+          vehicleLabel: label,
+          message: label + ", " + miles + " mi, " + condition + ", range " + range.low + "-" + range.high,
+          status: "new",
+        });
+        if (name) state.lead.name = name;
+        if (phone) state.lead.phone = phone;
+        state.lead.intent = "trade-in — " + label;
+      });
+    }
+
     function finish(res) {
       addRow("ava", res.html, res.cars);
       Voice.speak(res.html, res.voice);
       state.history.push({ role: "assistant", content: Voice.strip(res.html) });
       if (state.history.length > 16) state.history = state.history.slice(-16);
+      if (res.form === "trade") mountTradeForm();
     }
 
     async function askModel(text) {

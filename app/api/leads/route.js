@@ -10,6 +10,16 @@ function clean(value, max = 200) {
   return value.trim().slice(0, max)
 }
 
+function typeFromIntent(intent) {
+  const t = intent.toLowerCase()
+  if (!t) return ''
+  if (t.includes('trade')) return 'trade_in'
+  if (t.includes('financ') || t.includes('approv') || t.includes('credit')) return 'financing'
+  if (t.includes('drive') || t.includes('appointment') || t.includes('schedule')) return 'test_drive'
+  if (t.includes('vehicle') || t.includes('car')) return 'vehicle_inquiry'
+  return 'contact'
+}
+
 export async function POST(request) {
   let body
   try {
@@ -18,12 +28,17 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const type = clean(body.type, 40)
   const name = clean(body.name, 120)
   const email = clean(body.email, 160)
   const phone = clean(body.phone, 40)
 
-  if (!LEAD_TYPES.includes(type)) {
+  // The Ava plugin posts {intent, vehicleLabel} rather than our {type,
+  // vehicleTitle}. Accept both so dropping in a new build of the widget does
+  // not need the vendor file edited.
+  const intent = clean(body.intent, 120)
+  const type = LEAD_TYPES.includes(clean(body.type, 40)) ? clean(body.type, 40) : typeFromIntent(intent)
+
+  if (!type) {
     return NextResponse.json({ error: 'Unknown request type.' }, { status: 400 })
   }
   if (name.length < 2) {
@@ -42,9 +57,9 @@ export async function POST(request) {
       name,
       email,
       phone,
-      message: clean(body.message, MAX),
+      message: clean(body.message, MAX) || (intent ? `Asked Ava about: ${intent}` : ''),
       vehicleId: clean(body.vehicleId, 40),
-      vehicleTitle: clean(body.vehicleTitle, 200),
+      vehicleTitle: clean(body.vehicleTitle, 200) || clean(body.vehicleLabel, 200),
       preferredDate: clean(body.preferredDate, 40),
       preferredTime: clean(body.preferredTime, 40),
       tradeDetails: clean(body.tradeDetails, MAX),
