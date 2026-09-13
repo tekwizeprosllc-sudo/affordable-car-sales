@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body { @apply bg-black text-white font-sans; background-color: #0a0e27; }
+  h1, h2, h3, h4, h5, h6 { @apply font-display; }
+}
+
+@layer components {
+  .btn-primary { @apply bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded transition duration-200; }
+  .btn-secondary { @apply bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded transition duration-200; }
+  .card-dark { @apply bg-gray-900/50 border border-gray-800 rounded-lg; }
+  .text-glow-red { @apply shadow-glow-red; }
+}
+
+* { @apply transition-colors duration-200; }
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #1a1f3a; }
+::-webkit-scrollbar-thumb { background: #dc2626; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #b91c1c; }
