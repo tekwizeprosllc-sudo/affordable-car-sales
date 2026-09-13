@@ -34,7 +34,8 @@
     open: false,
     messages: [],
     pendingLead: null,
-    lead: { name: "", phone: "", intent: "" },
+    lead: { name: "", phone: "", intent: "", vehicleTitle: "" },
+    leadSent: false,
     listening: false,
     muted: !CFG.voice,
     voiceReady: false,
@@ -181,11 +182,43 @@
     return CARS.find((c) => t.includes(c.id) || t.includes(c.model.split(" ")[0].toLowerCase()) && t.includes(c.make.toLowerCase())) || null;
   }
 
+  // Hand the captured name and phone to the dealer's CRM. Fire and forget: if
+  // the desk is unreachable the shopper should never see it or be held up.
+  function sendLead() {
+    if (state.leadSent) return;
+    const lead = state.lead;
+    if (!lead.name || !lead.phone) return;
+    state.leadSent = true;
+
+    const intent = (lead.intent || "").toLowerCase();
+    let type = "contact";
+    if (intent.indexOf("test drive") !== -1) type = "test_drive";
+    else if (intent.indexOf("financ") !== -1 || intent.indexOf("approval") !== -1) type = "financing";
+    else if (intent.indexOf("trade") !== -1) type = "trade_in";
+
+    try {
+      fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        keepalive: true,
+        body: JSON.stringify({
+          type: type,
+          name: lead.name,
+          phone: lead.phone,
+          source: "ava",
+          vehicleTitle: lead.vehicleTitle || "",
+          message: lead.intent ? "Asked Ava about: " + lead.intent : "Started a chat with Ava",
+        }),
+      }).catch(function () {});
+    } catch (e) {}
+  }
+
   function replyTo(text) {
     const t = (text || "").trim();
     const low = t.toLowerCase();
 
     if (state.pendingLead === "name") {
+      state.leadSent = false;
       state.lead.name = t.split(/\s+/).slice(0, 3).join(" ");
       state.pendingLead = "phone";
       return { html: "Cute name. Now the number I actually need — cell is fine. I don't do landlines in " + new Date().getFullYear() + ".", voice: "name" };
@@ -193,6 +226,7 @@
     if (state.pendingLead === "phone") {
       state.lead.phone = t;
       state.pendingLead = null;
+      sendLead();
       return {
         html:
           "Got it, " +
@@ -268,6 +302,7 @@
       const pick = hit[0] || CARS[4];
       state.pendingLead = "name";
       state.lead.intent = "test drive — " + title(pick);
+      state.lead.vehicleTitle = title(pick);
       return {
         html:
           "Yes. Life is short and that " +
