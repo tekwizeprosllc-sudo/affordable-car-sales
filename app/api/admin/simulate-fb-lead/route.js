@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createLead } from '@/lib/db'
+import { createLead, deleteDemoLeads } from '@/lib/db'
 import { isAuthed } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
@@ -60,8 +60,14 @@ export async function POST() {
     vehicleTitle: vehicle.title,
     preferredDate: soonDate(),
     preferredTime: pick(TIMES),
-    source: 'facebook',
+    source: 'facebook (demo)',
   })
 
   return NextResponse.json({ ok: true, lead })
+}
+
+export async function DELETE() {
+  if (!isAuthed()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const removed = await deleteDemoLeads()
+  return NextResponse.json({ ok: true, removed })
 }

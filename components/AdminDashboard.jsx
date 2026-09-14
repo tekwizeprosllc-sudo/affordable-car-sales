@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Phone, Mail, Car, RefreshCw, MessageCircle, CalendarClock, ExternalLink, Facebook, Globe, Zap, Loader2 } from 'lucide-react';
+import { Phone, Mail, Car, RefreshCw, MessageCircle, CalendarClock, ExternalLink, Facebook, Globe, Zap, Loader2, Trash2 } from 'lucide-react';
 import { CHANNELS, leadChannel } from '@/lib/leads';
 
 const STATUSES = ['new', 'contacted', 'scheduled', 'showed', 'no-show', 'won', 'lost'];
@@ -63,6 +63,8 @@ export default function AdminDashboard({ initialLeads, counts }) {
   );
 
   const channelCount = (key) => leads.filter((l) => leadChannel(l.source) === key).length;
+  const isDemo = (l) => /\(demo\)/i.test(l.source || '');
+  const demoCount = leads.filter(isDemo).length;
   const todayStr = new Date().toDateString();
   const todayCount = leads.filter((l) => new Date(l.created_at).toDateString() === todayStr).length;
 
@@ -97,6 +99,17 @@ export default function AdminDashboard({ initialLeads, counts }) {
     setSimulating(false);
   }
 
+  async function clearDemo() {
+    if (!confirm('Remove all simulated (demo) Facebook leads? Real leads are kept.')) return;
+    setSimulating(true);
+    const res = await fetch('/api/admin/simulate-fb-lead', { method: 'DELETE' });
+    if (res.ok) {
+      setLeads((prev) => prev.filter((l) => !isDemo(l)));
+      setChannel('');
+    }
+    setSimulating(false);
+  }
+
   return (
     <main>
       <div className="mx-auto max-w-[1400px] px-6 py-8">
@@ -113,6 +126,17 @@ export default function AdminDashboard({ initialLeads, counts }) {
               {simulating ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
               {simulating ? 'Sending…' : 'Simulate FB Reply'}
             </button>
+            {demoCount > 0 && (
+              <button
+                onClick={clearDemo}
+                disabled={simulating}
+                title="Delete all simulated demo leads (real leads are kept)"
+                className="inline-flex items-center gap-1.5 rounded-[3px] px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.1em] transition disabled:opacity-60"
+                style={{ background: 'var(--surface-2)', color: 'var(--muted)', border: '1px solid var(--line)' }}
+              >
+                <Trash2 size={13} /> Clear Demo ({demoCount})
+              </button>
+            )}
             <button onClick={refresh} className="btn-ghost py-2 text-[11px]">
               <RefreshCw size={13} /> Refresh
             </button>
