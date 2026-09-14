@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Messenger auto-reply — Affordable Car Sales</title>
+<meta name="theme-color" content="#0A0E27">
+<link rel="stylesheet" href="theme.css">
+<style>
+  .stage{ display:grid; grid-template-columns:minmax(0,1fr) 390px; gap:22px; align-items:start }
+
+  /* ---------- thread ---------- */
+  .thread{ display:flex; flex-direction:column; min-height:640px }
+  .thread-top{ display:flex; align-items:center; gap:12px; padding:13px 16px; border-bottom:1px solid var(--edge) }
+  .avatar{
+    width:38px; height:38px; border-radius:50%; flex:none;
+    background:linear-gradient(150deg,#3B9EFF,#1B6FD4);
+    display:grid; place-items:center; color:#fff; font-weight:700; font-size:16px;
+  }
+  .thread-top .who{ color:var(--chalk); font-weight:600; font-size:14.5px }
+  .thread-top .sub{ font-size:12.5px; color:var(--dim) }
+
+  .ctx{
+    display:flex; align-items:center; gap:11px; flex-wrap:wrap;
+    padding:11px 16px; background:var(--panel-2); border-bottom:1px solid var(--edge);
+  }
+  .ctx label{
+    font-family:var(--display); font-weight:600; font-size:12px;
+    letter-spacing:.11em; text-transform:uppercase; color:var(--dim);
+  }
+  .ctx select{
+    font-size:13.5px; padding:6px 10px; max-width:100%;
+    background:var(--void); color:var(--chalk);
+    border:1px solid var(--edge); border-radius:6px;
+  }
+  .ctx select:focus{ outline:none; border-color:var(--crimson) }
+
+  .log{
+    flex:1; padding:20px 16px; overflow-y:auto; max-height:430px;
+    display:flex; flex-direction:column; gap:9px;
+    background:var(--void);
+  }
+  .bubble{
+    max-width:74%; padding:10px 14px; border-radius:17px;
+    font-size:14.5px; line-height:1.45; white-space:pre-wrap; word-break:break-word;
+  }
+  .b-cust{ align-self:flex-end; background:#0A7CEA; color:#fff; border-bottom-right-radius:5px }
+  .b-page{
+    align-self:flex-start; background:var(--raise); color:var(--chalk);
+    border-bottom-left-radius:5px; border:1px solid var(--edge);
+  }
+  .b-page a{ color:#5FB2FF; text-decoration:underline; text-underline-offset:2px }
+  .stamp{
+    align-self:center; font-size:11.5px; color:var(--faint);
+    font-family:var(--display); letter-spacing:.09em; text-transform:uppercase; padding:3px 0;
+  }
+  .flag{
+    align-self:flex-start; max-width:76%;
+    font-size:12.5px; color:var(--warn);
+    border-left:2px solid var(--warn); padding:5px 0 5px 11px;
+  }
+  .typing{
+    align-self:flex-start; background:var(--raise); border:1px solid var(--edge);
+    border-radius:17px; padding:12px 15px; display:flex; gap:5px;
+  }
+  .typing i{ width:7px; height:7px; border-radius:50%; background:var(--dim); display:block; animation:bl 1.3s infinite }
+  .typing i:nth-child(2){ animation-delay:.18s }
+  .typing i:nth-child(3){ animation-delay:.36s }
+  @keyframes bl{ 0%,60%,100%{opacity:.28} 30%{opacity:1} }
+
+  .composer{ border-top:1px solid var(--edge); padding:13px 16px 15px; background:var(--panel) }
+  .crow{ display:flex; gap:9px }
+  .crow input{
+    flex:1; font-size:14.5px; padding:11px 16px;
+    background:var(--void); color:var(--chalk);
+    border:1px solid var(--edge); border-radius:22px;
+  }
+  .crow input::placeholder{ color:var(--faint) }
+  .crow input:focus{ outline:none; border-color:var(--crimson); box-shadow:0 0 0 3px rgba(220,38,38,.13) }
+  .crow .btn{ border-radius:22px }
+  .presets{ display:flex; gap:6px; flex-wrap:wrap; margin-top:11px }
+  .presets button{
+    font-size:12.5px; padding:6px 12px; border-radius:15px; cursor:pointer;
+    background:transparent; border:1px solid var(--edge); color:var(--dim);
+    transition:border-color .15s, color .15s;
+  }
+  .presets button:hover{ border-color:var(--crimson); color:var(--chalk) }
+
+  /* ---------- inventory ---------- */
+  .veh{ display:flex; align-items:center; gap:11px; padding:11px 15px; border-bottom:1px solid var(--edge-soft) }
+  .veh:last-child{ border-bottom:0 }
+  .veh-id{ flex:1; min-width:0 }
+  .veh-id b{ display:block; font-size:13.5px; font-weight:600; color:var(--chalk) }
+  .veh-id small{ font-family:var(--mono); font-size:11px; color:var(--faint) }
+  .switch{ display:flex; border:1px solid var(--edge); border-radius:6px; overflow:hidden; flex:none }
+  .switch button{
+    font-family:var(--display); font-weight:700; font-size:10.5px; letter-spacing:.07em;
+    padding:6px 8px; border:0; border-right:1px solid var(--edge);
+    background:var(--void); color:var(--faint); cursor:pointer; transition:background .14s,color .14s;
+  }
+  .switch button:last-child{ border-right:0 }
+  .switch button:hover{ color:var(--silver) }
+  .switch button[aria-pressed="true"][data-s="AVAILABLE"]{ background:var(--ok); color:#06210F }
+  .switch button[aria-pressed="true"][data-s="PENDING"]{ background:var(--warn); color:#2A1B00 }
+  .switch button[aria-pressed="true"][data-s="SOLD"]{ background:var(--crimson); color:#fff }
+  .switch button[aria-pressed="true"][data-s="UNKNOWN"]{ background:var(--gone); color:#0B0F1E }
+
+  /* ---------- trace ---------- */
+  .trace{ padding:6px 0 8px }
+  .trow{ display:flex; gap:13px; padding:7px 15px; font-size:12.5px; align-items:baseline }
+  .trow dt{
+    width:80px; flex:none;
+    font-family:var(--display); font-weight:600; font-size:11.5px;
+    letter-spacing:.1em; text-transform:uppercase; color:var(--faint);
+  }
+  .trow dd{ margin:0; font-family:var(--mono); font-size:12px; color:var(--silver); word-break:break-word }
+  .trow dd.s-AVAILABLE{ color:var(--ok) }
+  .trow dd.s-PENDING{ color:var(--warn) }
+  .trow dd.s-SOLD{ color:var(--crimson-hot) }
+  .trow dd.s-UNKNOWN{ color:var(--gone) }
+  .trow dd.hot{ color:var(--crimson-hot) }
+
+  @media (max-width:980px){
+    .stage{ grid-template-columns:1fr }
+    .log{ max-height:340px }
+    .bubble{ max-width:86% }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-in">
+    <a class="brand" href="index.html">
+      <span class="mark">A</span>
+      <span class="brand-txt"><span class="a">AFFORDABLE</span><span class="b">CAR SALES</span></span>
+    </a>
+    <h1>Messenger auto-reply</h1>
+    <p class="tagline">Answers come from inventory, not from a script.</p>
+    <div class="right">
+      <span class="chip chip-warn">Simulator</span>
+      <a class="crumb" href="board.html">Board &rsaquo;</a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap stage">
+
+  <section class="panel thread">
+    <div class="rule-red"></div>
+    <div class="thread-top">
+      <div class="avatar">M</div>
+      <div>
+        <div class="who">Marcus Webb</div>
+        <div class="sub">Messaged your Marketplace listing</div>
+      </div>
+    </div>
+    <div class="ctx">
+      <label for="ctx">Came from</label>
+      <select id="ctx"></select>
+    </div>
+    <div class="log" id="log" aria-live="polite"></div>
+    <div class="composer">
+      <div class="crow">
+        <input id="input" type="text" placeholder="Type a customer message…" autocomplete="off">
+        <button class="btn btn-primary" id="send">Send</button>
+      </div>
+      <div class="presets" id="presets"></div>
+    </div>
+  </section>
+
+  <aside style="display:flex;flex-direction:column;gap:22px">
+
+    <section class="panel">
+      <header><h2>Inventory</h2><span class="sub">— flip one, then ask again</span></header>
+      <div id="inventory"></div>
+    </section>
+
+    <section class="panel">
+      <header><h2>Decision trace</h2><span class="sub">— last message</span></header>
+      <div id="trace"><p class="empty">Send a message to see how it decided.</p></div>
+      <p class="footnote">
+        The reply never decides whether a car exists. It asks inventory, gets a status,
+        and reads back a fixed answer for that status. <strong>Set a car to SOLD and ask
+        again</strong> — the answer changes with nobody touching the bot.
+      </p>
+    </section>
+
+    <button class="btn btn-ghost btn-sm" id="reset" style="align-self:flex-start">Clear conversation</button>
+  </aside>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var SITE = "https://affordablecarsalesoh.com";
+
+  var inventory = [
+    {stock:"155443", year:2023, make:"Chevrolet", model:"Malibu",         trim:"LS",  status:"AVAILABLE"},
+    {stock:"185887", year:2017, make:"GMC",       model:"Yukon",          trim:"SLT", status:"AVAILABLE"},
+    {stock:"010895", year:2019, make:"Hyundai",   model:"Tucson",         trim:"SE",  status:"PENDING"},
+    {stock:"207859", year:2012, make:"Chevrolet", model:"Silverado 1500", trim:"LT",  status:"AVAILABLE"},
+    {stock:"547027", year:2021, make:"Nissan",    model:"Kicks",          trim:"S",   status:"SOLD"},
+    {stock:"516441", year:2011, make:"Honda",     model:"Civic",          trim:"LX",  status:"AVAILABLE"}
+  ];
+  var STATUSES = ["AVAILABLE","PENDING","SOLD","UNKNOWN"];
+
+  function label(v){ return v.year+" "+v.make+" "+v.model+" "+v.trim; }
+  function find(s){ for(var i=0;i<inventory.length;i++) if(inventory[i].stock===s) return inventory[i]; return null; }
+  function tdUrl(v){ return SITE+"/inventory/"+v.stock+"?action=test-drive"; }
+  function invUrl(){ return SITE+"/inventory"; }
+
+  var RULES = [
+    {intent:"TEST_DRIVE",   re:/\btest[\s-]?driv/i,                          src:"/\\btest[\\s-]?driv/"},
+    {intent:"TEST_DRIVE",   re:/\bcan i (come )?(see|look at|drive)/i,       src:"/\\bcan i (come )?(see|look at|drive)/"},
+    {intent:"TEST_DRIVE",   re:/\bwhen can i\b/i,                            src:"/\\bwhen can i\\b/"},
+    {intent:"TEST_DRIVE",   re:/\b(schedule|book)\b/i,                       src:"/\\b(schedule|book)\\b/"},
+    {intent:"AVAILABILITY", re:/\bstill (there|available|have)\b/i,          src:"/\\bstill (there|available|have)\\b/"},
+    {intent:"AVAILABILITY", re:/\b(is|are) (it|this|that|they) available\b/i,src:"/\\b(is|are) (it|this) available\\b/"},
+    {intent:"AVAILABILITY", re:/\bdo you (still )?have\b/i,                  src:"/\\bdo you (still )?have\\b/"},
+    {intent:"AVAILABILITY", re:/\b(has|is) (it|this|that) sold\b/i,          src:"/\\b(has|is) (it|this) sold\\b/"},
+    {intent:"AVAILABILITY", re:/\bavailable\b/i,                             src:"/\\bavailable\\b/"},
+    {intent:"AVAILABILITY", re:/^\s*\?+\s*$/,                                src:"/^\\s*\\?+\\s*$/"}
+  ];
+
+  function norm(t){ return String(t).toLowerCase().replace(/[\u2019\u2018]/g,"'").replace(/\s+/g," ").trim(); }
+  function matchIntent(t){
+    var n=norm(t);
+    for(var i=0;i<RULES.length;i++) if(RULES[i].re.test(n)) return {intent:RULES[i].intent, rule:RULES[i].src};
+    return {intent:"NO_MATCH", rule:"none"};
+  }
+
+  function resolveVehicle(text){
+    var ctx=document.getElementById("ctx").value;
+    if(ctx) return {vehicle:find(ctx), how:"listing context (post_id)"};
+    var n=norm(text);
+    var hits=inventory.filter(function(v){
+      return n.indexOf(v.model.toLowerCase())>-1 || n.indexOf(v.stock)>-1;
+    });
+    if(hits.length===1) return {vehicle:hits[0], how:"matched model in message text"};
+    if(hits.length>1)   return {vehicle:null, how:"ambiguous — "+hits.length+" matches"};
+    return {vehicle:null, how:"no listing context, no text match"};
+  }
+
+  function buildReply(intent, v){
+    if(!v) return {text:"Happy to check — which vehicle are you asking about? Everything on the lot is here:\n"+invUrl(), flag:true, rule:"no vehicle resolved → ask + flag"};
+    var name=label(v);
+    if(intent==="AVAILABILITY"){
+      if(v.status==="AVAILABLE") return {text:"Yes, the "+name+" is still available.\n\nWant to schedule a test drive? You can pick a time here:\n"+tdUrl(v), flag:false, rule:"AVAILABILITY + AVAILABLE"};
+      if(v.status==="PENDING")   return {text:"The "+name+" is currently pending sale. I can still show you similar vehicles that are available:\n"+invUrl(), flag:false, rule:"AVAILABILITY + PENDING"};
+      if(v.status==="SOLD")      return {text:"That one is no longer available, but you can see what's currently on the lot here:\n"+invUrl(), flag:false, rule:"AVAILABILITY + SOLD"};
+      return {text:"I'm checking on that one. The dealership will confirm its availability.", flag:true, rule:"AVAILABILITY + UNKNOWN → staff"};
+    }
+    if(intent==="TEST_DRIVE"){
+      if(v.status==="AVAILABLE") return {text:"Absolutely. Pick a day and time that works for you here:\n"+tdUrl(v)+"\n\nThe dealership will confirm the appointment.", flag:false, rule:"TEST_DRIVE + AVAILABLE"};
+      if(v.status==="PENDING")   return {text:"Heads up — the "+name+" is pending sale right now, so I can't book it yet. Here's what's available today:\n"+invUrl(), flag:false, rule:"TEST_DRIVE + PENDING → no booking"};
+      if(v.status==="SOLD")      return {text:"That one has sold, so I can't set up a drive on it. Here's what's on the lot now:\n"+invUrl(), flag:false, rule:"TEST_DRIVE + SOLD → no booking"};
+      return {text:"I'm confirming whether that one is still on the lot. The dealership will follow up shortly.", flag:true, rule:"TEST_DRIVE + UNKNOWN → staff"};
+    }
+    return {text:"Thanks for reaching out — someone from the dealership will get right back to you. In the meantime you can browse everything here:\n"+invUrl(), flag:true, rule:"NO_MATCH → human handoff"};
+  }
+
+  var log=document.getElementById("log");
+  function scroll(){ log.scrollTop=log.scrollHeight; }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+  function linkify(t){ return esc(t).replace(/https?:\/\/[^\s]+/g,function(u){ return '<a href="'+u+'" target="_blank" rel="noopener">'+u+'</a>'; }); }
+
+  function say(who,text){
+    var d=document.createElement("div");
+    d.className="bubble "+(who==="customer"?"b-cust":"b-page");
+    if(who==="customer") d.textContent=text; else d.innerHTML=linkify(text);
+    log.appendChild(d); scroll();
+  }
+  function stamp(t){ var d=document.createElement("div"); d.className="stamp"; d.textContent=t; log.appendChild(d); scroll(); }
+  function flagStaff(){ var d=document.createElement("div"); d.className="flag"; d.textContent="Flagged for staff — a person needs to answer this one."; log.appendChild(d); scroll(); }
+  function typing(ms,done){
+    var d=document.createElement("div"); d.className="typing"; d.innerHTML="<i></i><i></i><i></i>";
+    log.appendChild(d); scroll();
+    setTimeout(function(){ d.remove(); done(); }, ms);
+  }
+
+  function renderTrace(o){
+    var rows=[
+      ["heard",     esc(o.raw),      ""],
+      ["intent",    o.intent,        o.intent==="NO_MATCH"?"hot":""],
+      ["matched",   esc(o.rule),     ""],
+      ["vehicle",   esc(o.vehicleName), ""],
+      ["found by",  esc(o.how),      ""],
+      ["status",    o.status,        "s-"+o.status],
+      ["response",  esc(o.responseRule), ""],
+      ["escalated", o.flag?"yes — staff notified":"no", o.flag?"hot":""]
+    ];
+    var h='<dl class="trace">';
+    rows.forEach(function(r){ h+='<div class="trow"><dt>'+r[0]+'</dt><dd class="'+r[2]+'">'+r[1]+'</dd></div>'; });
+    document.getElementById("trace").innerHTML=h+'</dl>';
+  }
+
+  function handle(text){
+    if(!text.trim()) return;
+    say("customer", text);
+    var m=matchIntent(text), rv=resolveVehicle(text), v=rv.vehicle;
+    var status=v?v.status:"UNKNOWN";
+    var reply=buildReply(m.intent, v);
+
+    renderTrace({raw:text, intent:m.intent, rule:m.rule,
+      vehicleName: v?label(v)+" · #"+v.stock:"not resolved",
+      how:rv.how, status:status, responseRule:reply.rule, flag:reply.flag});
+
+    typing(850,function(){
+      say("page", reply.text);
+      stamp("Replied automatically · "+new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}));
+      if(reply.flag) flagStaff();
+    });
+  }
+
+  function renderInventory(){
+    var host=document.getElementById("inventory"); host.innerHTML="";
+    inventory.forEach(function(v){
+      var row=document.createElement("div"); row.className="veh";
+      var id=document.createElement("div"); id.className="veh-id";
+      id.innerHTML="<b>"+esc(label(v))+"</b><small>#"+v.stock+"</small>";
+      var sw=document.createElement("div"); sw.className="switch";
+      STATUSES.forEach(function(s){
+        var b=document.createElement("button"); b.type="button"; b.dataset.s=s;
+        b.textContent = s==="AVAILABLE"?"AVAIL":s==="UNKNOWN"?"UNK":s;
+        b.setAttribute("aria-pressed", String(v.status===s));
+        b.setAttribute("aria-label", label(v)+" — set "+s);
+        b.addEventListener("click",function(){ v.status=s; renderInventory(); renderCtx(); });
+        sw.appendChild(b);
+      });
+      row.appendChild(id); row.appendChild(sw); host.appendChild(row);
+    });
+  }
+
+  function renderCtx(){
+    var sel=document.getElementById("ctx"), keep=sel.value;
+    sel.innerHTML="";
+    var none=document.createElement("option");
+    none.value=""; none.textContent="— direct message, no listing —";
+    sel.appendChild(none);
+    inventory.forEach(function(v){
+      var o=document.createElement("option");
+      o.value=v.stock; o.textContent=label(v)+"  ·  #"+v.stock;
+      sel.appendChild(o);
+    });
+    sel.value = keep || inventory[0].stock;
+  }
+
+  var PRESETS=["Is it still available?","do you still have this","Can I test drive it?",
+               "when can i come see it","has this sold","What's the payoff on a trade?"];
+  (function(){
+    var host=document.getElementById("presets");
+    PRESETS.forEach(function(p){
+      var b=document.createElement("button"); b.type="button"; b.textContent=p;
+      b.addEventListener("click",function(){ handle(p); });
+      host.appendChild(b);
+    });
+  })();
+
+  var input=document.getElementById("input");
+  document.getElementById("send").addEventListener("click",function(){ handle(input.value); input.value=""; });
+  input.addEventListener("keydown",function(e){ if(e.key==="Enter"){ handle(input.value); input.value=""; } });
+  document.getElementById("reset").addEventListener("click",function(){
+    log.innerHTML="";
+    document.getElementById("trace").innerHTML='<p class="empty">Send a message to see how it decided.</p>';
+    input.focus();
+  });
+
+  renderInventory(); renderCtx();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,259 @@
+/* ==========================================================================
+   Affordable Car Sales — dealer tools theme
+   Matches the site: pitch black, crimson, Barlow Condensed + Manrope
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root{
+  /* surfaces — darkest to lightest */
+  --void:      #06080E;
+  --pitch:     #0A0E27;
+  --panel:     #101528;
+  --panel-2:   #161C33;
+  --raise:     #1C2340;
+  --edge:      #222A45;
+  --edge-soft: #1A2039;
+
+  /* brand */
+  --crimson:     #DC2626;
+  --crimson-hot: #F03434;
+  --crimson-dim: #8E1A1A;
+  --crimson-wash: rgba(220,38,38,.12);
+
+  /* text */
+  --chalk: #F4F6FA;
+  --silver:#C3CAD8;
+  --dim:   #7B849A;
+  --faint: #545D73;
+
+  /* semantic status */
+  --ok:      #2ECC71;
+  --ok-bg:   rgba(46,204,113,.12);
+  --warn:    #F0A92B;
+  --warn-bg: rgba(240,169,43,.12);
+  --gone:    #6B7691;
+  --gone-bg: rgba(107,118,145,.14);
+  --info:    #3B9EFF;
+
+  /* type */
+  --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue Condensed", sans-serif;
+  --body: "Manrope", ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --glow: 0 0 22px rgba(220,38,38,.34);
+  --lift: 0 10px 34px rgba(0,0,0,.5);
+  --r: 10px;
+}
+
+*{ box-sizing:border-box }
+html,body{ margin:0; padding:0 }
+
+body{
+  background:var(--pitch);
+  color:var(--silver);
+  font-family:var(--body);
+  font-size:15px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+/* faint crimson bloom, fixed so it doesn't scroll away */
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  background:
+    radial-gradient(760px 420px at 82% -8%, rgba(220,38,38,.14), transparent 62%),
+    radial-gradient(620px 360px at 8% 104%, rgba(220,38,38,.07), transparent 66%);
+  pointer-events:none; z-index:0;
+}
+body > *{ position:relative; z-index:1 }
+
+h1,h2,h3,h4{
+  font-family:var(--display);
+  color:var(--chalk);
+  letter-spacing:.005em;
+  margin:0;
+  line-height:1.05;
+}
+
+a{ color:var(--crimson-hot) }
+button,input,select,textarea{ font-family:var(--body) }
+
+::selection{ background:var(--crimson); color:#fff }
+
+:focus-visible{
+  outline:2px solid var(--crimson-hot);
+  outline-offset:2px;
+  border-radius:3px;
+}
+
+::-webkit-scrollbar{ width:9px; height:9px }
+::-webkit-scrollbar-track{ background:var(--void) }
+::-webkit-scrollbar-thumb{ background:#2A3252; border-radius:5px }
+::-webkit-scrollbar-thumb:hover{ background:var(--crimson-dim) }
+
+/* ===================== masthead ===================== */
+.masthead{
+  background:linear-gradient(180deg, #0B1022 0%, rgba(11,16,34,.86) 100%);
+  border-bottom:1px solid var(--edge);
+  backdrop-filter:blur(8px);
+  position:sticky; top:0; z-index:30;
+}
+.masthead-in{
+  max-width:1320px; margin:0 auto;
+  padding:13px 26px;
+  display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+}
+.brand{ display:flex; align-items:center; gap:10px; text-decoration:none }
+.mark{
+  width:34px; height:34px; flex:none;
+  border-radius:7px;
+  background:linear-gradient(150deg, var(--crimson) 0%, #8E1A1A 100%);
+  display:grid; place-items:center;
+  font-family:var(--display); font-weight:800; font-size:19px;
+  color:#fff;
+  box-shadow:var(--glow);
+}
+.brand-txt{ display:flex; flex-direction:column; line-height:1 }
+.brand-txt .a{ font-family:var(--display); font-weight:700; font-size:15px; letter-spacing:.09em; color:var(--chalk) }
+.brand-txt .b{ font-family:var(--display); font-weight:700; font-size:11px; letter-spacing:.21em; color:var(--crimson); margin-top:2px }
+
+.masthead h1{
+  font-size:20px; font-weight:700; letter-spacing:.03em;
+  text-transform:uppercase;
+  padding-left:18px; margin-left:2px;
+  border-left:1px solid var(--edge);
+}
+.masthead .tagline{ font-size:13px; color:var(--dim); margin:0 }
+.masthead .right{ margin-left:auto; display:flex; align-items:center; gap:9px; flex-wrap:wrap }
+
+.crumb{
+  font-size:12.5px; color:var(--dim); text-decoration:none;
+  padding:6px 11px; border:1px solid var(--edge); border-radius:6px;
+  transition:border-color .15s, color .15s;
+}
+.crumb:hover{ border-color:var(--crimson-dim); color:var(--silver) }
+
+/* ===================== buttons ===================== */
+.btn{
+  font-family:var(--display);
+  font-weight:700; font-size:14px; letter-spacing:.07em; text-transform:uppercase;
+  padding:9px 18px; border-radius:6px; border:1px solid transparent;
+  cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:8px;
+  transition:background .15s, border-color .15s, color .15s, box-shadow .15s, transform .08s;
+}
+.btn-primary{
+  background:var(--crimson); color:#fff;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.17), 0 0 0 rgba(220,38,38,0);
+}
+.btn-primary:hover{ background:var(--crimson-hot); box-shadow:inset 0 1px 0 rgba(255,255,255,.17), var(--glow) }
+.btn-primary:active{ transform:translateY(1px) }
+.btn-ghost{ background:transparent; border-color:var(--edge); color:var(--silver) }
+.btn-ghost:hover{ border-color:var(--crimson); color:var(--chalk) }
+.btn-sm{ font-size:12px; padding:6px 12px; letter-spacing:.06em }
+
+/* ===================== panels ===================== */
+.wrap{ max-width:1320px; margin:26px auto; padding:0 26px 72px }
+
+.panel{
+  background:var(--panel);
+  border:1px solid var(--edge);
+  border-radius:var(--r);
+  overflow:hidden;
+}
+.panel > header{
+  display:flex; align-items:center; gap:11px;
+  padding:12px 16px;
+  background:var(--panel-2);
+  border-bottom:1px solid var(--edge);
+}
+.panel > header h2{
+  font-size:16px; font-weight:700; letter-spacing:.075em; text-transform:uppercase;
+}
+.panel > header .sub{ font-family:var(--body); font-size:12.5px; color:var(--dim); font-weight:400 }
+.panel > header .tools{ margin-left:auto; display:flex; gap:6px }
+
+.rule-red{ height:2px; background:linear-gradient(90deg, var(--crimson) 0%, transparent 72%) }
+
+.empty{ padding:26px 16px; color:var(--faint); font-size:13.5px; font-style:italic; text-align:center }
+
+.footnote{
+  font-size:12.5px; color:var(--dim); line-height:1.6;
+  padding:12px 16px; background:var(--panel-2); border-top:1px solid var(--edge-soft);
+}
+.footnote strong{ color:var(--silver); font-weight:600 }
+
+/* ===================== status chips ===================== */
+.chip{
+  display:inline-block;
+  font-family:var(--display); font-weight:700; font-size:11px;
+  letter-spacing:.1em; text-transform:uppercase;
+  padding:2px 8px; border-radius:3px; vertical-align:1px;
+}
+.chip-ok{ background:var(--ok-bg); color:var(--ok) }
+.chip-warn{ background:var(--warn-bg); color:var(--warn) }
+.chip-gone{ background:var(--gone-bg); color:var(--gone) }
+.chip-new{ background:var(--crimson-wash); color:var(--crimson-hot) }
+
+/* ===================== forms ===================== */
+.field{ display:grid; gap:5px }
+.field label{
+  font-family:var(--display); font-weight:600; font-size:12px;
+  letter-spacing:.11em; text-transform:uppercase; color:var(--dim);
+}
+.field input, .field select, .field textarea{
+  font-size:14.5px; padding:9px 12px;
+  background:var(--void); color:var(--chalk);
+  border:1px solid var(--edge); border-radius:6px; width:100%;
+  transition:border-color .15s;
+}
+.field input::placeholder, .field textarea::placeholder{ color:var(--faint) }
+.field input:focus, .field select:focus, .field textarea:focus{
+  outline:none; border-color:var(--crimson);
+  box-shadow:0 0 0 3px rgba(220,38,38,.13);
+}
+.field textarea{ resize:vertical; min-height:60px; font-family:var(--body) }
+.two{ display:grid; grid-template-columns:1fr 1fr; gap:11px }
+
+/* ===================== toasts ===================== */
+#toasts{
+  position:fixed; right:20px; bottom:20px; z-index:60;
+  display:flex; flex-direction:column; gap:10px; max-width:340px;
+}
+.toast{
+  background:var(--raise);
+  border:1px solid var(--edge);
+  border-left:3px solid var(--crimson);
+  border-radius:8px; padding:13px 15px;
+  box-shadow:var(--lift);
+  color:var(--silver); font-size:13.5px;
+  animation:toast-in .22s ease-out;
+}
+@keyframes toast-in{ from{ opacity:0; transform:translateY(9px) } to{ opacity:1; transform:none } }
+.toast .head{
+  font-family:var(--display); font-weight:700; font-size:12px;
+  letter-spacing:.13em; text-transform:uppercase; color:var(--crimson-hot);
+  margin-bottom:4px;
+}
+.toast .who{ color:var(--chalk); font-weight:600 }
+.toast .row{ display:flex; gap:7px; margin-top:11px }
+.toast .row a, .toast .row button{
+  flex:1; text-align:center; font-family:var(--display);
+  font-size:12px; font-weight:700; letter-spacing:.07em; text-transform:uppercase;
+  padding:7px 6px; border-radius:5px;
+  border:1px solid var(--edge); background:transparent; color:var(--silver);
+  text-decoration:none; cursor:pointer; transition:border-color .15s, color .15s;
+}
+.toast .row a:hover, .toast .row button:hover{ border-color:var(--crimson); color:var(--chalk) }
+
+@media (max-width:900px){
+  .wrap{ padding:0 14px 52px; margin-top:16px }
+  .masthead-in{ padding:11px 14px; gap:12px }
+  .masthead h1{ font-size:17px; padding-left:12px }
+  #toasts{ right:12px; left:12px; bottom:12px; max-width:none }
+}
+@media (prefers-reduced-motion:reduce){
+  *{ animation:none !important; transition:none !important }
+}

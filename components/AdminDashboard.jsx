@@ -1,8 +1,29 @@
 'use client';
 import { useState } from 'react';
-import { Phone, Mail, Car, RefreshCw } from 'lucide-react';
+import { Phone, Mail, Car, RefreshCw, MessageCircle, CalendarClock, ExternalLink } from 'lucide-react';
 
 const STATUSES = ['new', 'contacted', 'scheduled', 'showed', 'no-show', 'won', 'lost'];
+
+const DEALER_TOOLS = [
+  {
+    href: '/dealer-suite/messenger.html',
+    icon: MessageCircle,
+    title: 'Messenger Simulator',
+    desc: 'Auto-reply demo with live inventory and a decision trace.',
+  },
+  {
+    href: '/dealer-suite/board.html',
+    icon: CalendarClock,
+    title: 'Lead & Test-Drive Board',
+    desc: 'Calendar bookings, new-lead toasts, one-tap call / text / email.',
+  },
+  {
+    href: '/dealer-suite/index.html',
+    icon: ExternalLink,
+    title: 'Tools Hub',
+    desc: 'Landing page linking both dealer tools.',
+  },
+];
 
 const TYPE_LABELS = {
   test_drive: 'Test Drive',
@@ -85,7 +106,34 @@ export default function AdminDashboard({ initialLeads, counts }) {
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-2">
+        <section className="mt-8">
+          <h2 className="font-display text-[13px] font-extrabold uppercase tracking-[0.16em]" style={{ color: 'var(--muted)' }}>
+            Dealer Tools
+          </h2>
+          <div className="mt-3 grid gap-4 sm:grid-cols-3">
+            {DEALER_TOOLS.map((tool) => (
+              <a
+                key={tool.href}
+                href={tool.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="panel group flex flex-col rounded-[5px] p-5 transition hover:-translate-y-0.5"
+                style={{ borderColor: 'var(--line)' }}
+              >
+                <div className="flex items-center justify-between">
+                  <tool.icon size={20} className="text-crimson" />
+                  <ExternalLink size={13} className="opacity-40 transition group-hover:opacity-90" />
+                </div>
+                <h3 className="mt-3 font-display text-[16px] font-bold uppercase">{tool.title}</h3>
+                <p className="mt-1 text-[12.5px] leading-relaxed" style={{ color: 'var(--muted)' }}>
+                  {tool.desc}
+                </p>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        <div className="mt-8 flex flex-wrap gap-2">
           <button
             onClick={() => setFilter('')}
             className={`rounded-[3px] px-3 py-2 text-[10px] font-extrabold uppercase tracking-[0.12em] transition ${
