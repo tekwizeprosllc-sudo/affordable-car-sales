@@ -119,6 +119,9 @@ button,input,select,textarea{ font-family:var(--body) }
 .brand-txt{ display:flex; flex-direction:column; line-height:1 }
 .brand-txt .a{ font-family:var(--display); font-weight:700; font-size:15px; letter-spacing:.09em; color:var(--chalk) }
 .brand-txt .b{ font-family:var(--display); font-weight:700; font-size:11px; letter-spacing:.21em; color:var(--crimson); margin-top:2px }
+.brand-logo{ height:30px; width:auto; display:block }
+.crumb-back{ border:1px solid var(--edge); border-radius:6px; padding:6px 11px }
+.crumb-back:hover{ border-color:var(--crimson) }
 
 .masthead h1{
   font-size:20px; font-weight:700; letter-spacing:.03em;
