@@ -1,8 +1,11 @@
 'use client';
 import { useState } from 'react';
-import { Phone, Mail, Car, RefreshCw, MessageCircle, CalendarClock, ExternalLink } from 'lucide-react';
+import { Phone, Mail, Car, RefreshCw, MessageCircle, CalendarClock, ExternalLink, Facebook, Globe, Zap, Loader2, Trash2 } from 'lucide-react';
+import { CHANNELS, leadChannel } from '@/lib/leads';
 
 const STATUSES = ['new', 'contacted', 'scheduled', 'showed', 'no-show', 'won', 'lost'];
+
+const CHANNEL_ICONS = { facebook: Facebook, website: Globe };
 
 const DEALER_TOOLS = [
   {
@@ -51,9 +54,19 @@ function when(iso) {
 export default function AdminDashboard({ initialLeads, counts }) {
   const [leads, setLeads] = useState(initialLeads);
   const [filter, setFilter] = useState('');
+  const [channel, setChannel] = useState('');
   const [busy, setBusy] = useState(null);
+  const [simulating, setSimulating] = useState(false);
 
-  const visible = filter ? leads.filter((l) => l.status === filter) : leads;
+  const visible = leads.filter(
+    (l) => (!filter || l.status === filter) && (!channel || leadChannel(l.source) === channel)
+  );
+
+  const channelCount = (key) => leads.filter((l) => leadChannel(l.source) === key).length;
+  const isDemo = (l) => /\(demo\)/i.test(l.source || '');
+  const demoCount = leads.filter(isDemo).length;
+  const todayStr = new Date().toDateString();
+  const todayCount = leads.filter((l) => new Date(l.created_at).toDateString() === todayStr).length;
 
   async function setStatus(id, status) {
     setBusy(id);
@@ -74,24 +87,70 @@ export default function AdminDashboard({ initialLeads, counts }) {
     if (res.ok) setLeads((await res.json()).leads);
   }
 
+  // Demo: fire the "auto-reply captured a lead" flow and watch it land up top.
+  async function simulateFb() {
+    setSimulating(true);
+    const res = await fetch('/api/admin/simulate-fb-lead', { method: 'POST' });
+    if (res.ok) {
+      const { lead } = await res.json();
+      setLeads((prev) => [lead, ...prev]);
+      setChannel('facebook');
+    }
+    setSimulating(false);
+  }
+
+  async function clearDemo() {
+    if (!confirm('Remove all simulated (demo) Facebook leads? Real leads are kept.')) return;
+    setSimulating(true);
+    const res = await fetch('/api/admin/simulate-fb-lead', { method: 'DELETE' });
+    if (res.ok) {
+      setLeads((prev) => prev.filter((l) => !isDemo(l)));
+      setChannel('');
+    }
+    setSimulating(false);
+  }
+
   return (
     <main>
       <div className="mx-auto max-w-[1400px] px-6 py-8">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <h1 className="font-display text-3xl font-black uppercase">Leads</h1>
-          <button onClick={refresh} className="btn-ghost py-2 text-[11px]">
-            <RefreshCw size={13} /> Refresh
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={simulateFb}
+              disabled={simulating}
+              title="Demo: simulate a Facebook Messenger auto-reply capturing a lead"
+              className="inline-flex items-center gap-1.5 rounded-[3px] px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.1em] text-white transition disabled:opacity-60"
+              style={{ background: CHANNELS.facebook.color }}
+            >
+              {simulating ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
+              {simulating ? 'Sending…' : 'Simulate FB Reply'}
+            </button>
+            {demoCount > 0 && (
+              <button
+                onClick={clearDemo}
+                disabled={simulating}
+                title="Delete all simulated demo leads (real leads are kept)"
+                className="inline-flex items-center gap-1.5 rounded-[3px] px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.1em] transition disabled:opacity-60"
+                style={{ background: 'var(--surface-2)', color: 'var(--muted)', border: '1px solid var(--line)' }}
+              >
+                <Trash2 size={13} /> Clear Demo ({demoCount})
+              </button>
+            )}
+            <button onClick={refresh} className="btn-ghost py-2 text-[11px]">
+              <RefreshCw size={13} /> Refresh
+            </button>
+          </div>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="panel rounded-[5px] p-5">
-            <div className="font-display text-[32px] font-black leading-none text-crimson">{counts.total}</div>
+            <div className="font-display text-[32px] font-black leading-none text-crimson">{leads.length}</div>
             <div className="mt-1 text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--muted)' }}>
               Total Leads
             </div>
           </div>
           <div className="panel rounded-[5px] p-5">
-            <div className="font-display text-[32px] font-black leading-none text-crimson">{counts.today}</div>
+            <div className="font-display text-[32px] font-black leading-none text-crimson">{todayCount}</div>
             <div className="mt-1 text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--muted)' }}>
               Today
             </div>
@@ -133,7 +192,37 @@ export default function AdminDashboard({ initialLeads, counts }) {
           </div>
         </section>
 
-        <div className="mt-8 flex flex-wrap gap-2">
+        <div className="mt-8 flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-extrabold uppercase tracking-[0.14em]" style={{ color: 'var(--muted)' }}>
+            Channel
+          </span>
+          <button
+            onClick={() => setChannel('')}
+            className={`rounded-[3px] px-3 py-2 text-[10px] font-extrabold uppercase tracking-[0.12em] transition ${
+              !channel ? 'bg-crimson text-white' : ''
+            }`}
+            style={channel ? { background: 'var(--surface-2)', color: 'var(--muted)' } : undefined}
+          >
+            All ({leads.length})
+          </button>
+          {Object.values(CHANNELS).map((c) => {
+            const Icon = CHANNEL_ICONS[c.key];
+            const active = channel === c.key;
+            return (
+              <button
+                key={c.key}
+                onClick={() => setChannel(c.key)}
+                className="inline-flex items-center gap-1.5 rounded-[3px] px-3 py-2 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white transition"
+                style={active ? { background: c.color } : { background: 'var(--surface-2)', color: 'var(--muted)' }}
+              >
+                <Icon size={12} style={active ? undefined : { color: c.color }} />
+                {c.label} ({channelCount(c.key)})
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
           <button
             onClick={() => setFilter('')}
             className={`rounded-[3px] px-3 py-2 text-[10px] font-extrabold uppercase tracking-[0.12em] transition ${
@@ -177,6 +266,19 @@ export default function AdminDashboard({ initialLeads, counts }) {
                       >
                         {lead.status}
                       </span>
+                      {(() => {
+                        const ch = CHANNELS[leadChannel(lead.source)];
+                        const Icon = CHANNEL_ICONS[ch.key];
+                        return (
+                          <span
+                            className="inline-flex items-center gap-1 rounded-[2px] px-2 py-1 text-[9px] font-extrabold uppercase tracking-[0.14em] text-white"
+                            style={{ background: ch.color }}
+                            title={lead.source ? `Source: ${lead.source}` : ch.label}
+                          >
+                            <Icon size={10} /> {ch.label}
+                          </span>
+                        );
+                      })()}
                       <span className="text-[10px] font-extrabold uppercase tracking-[0.14em]" style={{ color: 'var(--muted)' }}>
                         {TYPE_LABELS[lead.type] || lead.type}
                       </span>
