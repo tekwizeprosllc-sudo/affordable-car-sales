@@ -3,45 +3,45 @@
    Matches the site: pitch black, crimson, Barlow Condensed + Manrope
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root{
-  /* surfaces — darkest to lightest */
-  --void:      #06080E;
-  --pitch:     #0A0E27;
-  --panel:     #101528;
-  --panel-2:   #161C33;
-  --raise:     #1C2340;
-  --edge:      #222A45;
-  --edge-soft: #1A2039;
+  /* surfaces — matches the site: near-black, not navy */
+  --void:      #060608;
+  --pitch:     #0B0B0D;   /* site --bg */
+  --panel:     #141518;   /* site --surface */
+  --panel-2:   #1B1D21;   /* site --surface-2 */
+  --raise:     #232529;
+  --edge:      rgba(255,255,255,.10);
+  --edge-soft: rgba(255,255,255,.06);
 
-  /* brand */
-  --crimson:     #DC2626;
-  --crimson-hot: #F03434;
-  --crimson-dim: #8E1A1A;
-  --crimson-wash: rgba(220,38,38,.12);
+  /* brand — site crimson #E10600 */
+  --crimson:     #E10600;
+  --crimson-hot: #FF4A40;
+  --crimson-dim: #B30500;
+  --crimson-wash: rgba(225,6,0,.12);
 
   /* text */
-  --chalk: #F4F6FA;
-  --silver:#C3CAD8;
-  --dim:   #7B849A;
-  --faint: #545D73;
+  --chalk: #FFFFFF;   /* site --fg */
+  --silver:#E6E8EB;
+  --dim:   #9AA0A6;   /* site --muted */
+  --faint: #6A6F77;
 
-  /* semantic status */
-  --ok:      #2ECC71;
-  --ok-bg:   rgba(46,204,113,.12);
-  --warn:    #F0A92B;
-  --warn-bg: rgba(240,169,43,.12);
-  --gone:    #6B7691;
-  --gone-bg: rgba(107,118,145,.14);
-  --info:    #3B9EFF;
+  /* semantic status — aligned with the admin */
+  --ok:      #2FA96B;
+  --ok-bg:   rgba(47,169,107,.12);
+  --warn:    #E8A33D;
+  --warn-bg: rgba(232,163,61,.12);
+  --gone:    #7A7F87;
+  --gone-bg: rgba(122,127,135,.14);
+  --info:    #3D8BE8;
 
-  /* type */
+  /* type — site fonts */
   --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue Condensed", sans-serif;
-  --body: "Manrope", ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --body: "Inter", ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
-  --glow: 0 0 22px rgba(220,38,38,.34);
+  --glow: 0 0 22px rgba(225,6,0,.30);
   --lift: 0 10px 34px rgba(0,0,0,.5);
   --r: 10px;
 }
@@ -64,8 +64,8 @@ body::before{
   content:"";
   position:fixed; inset:0;
   background:
-    radial-gradient(760px 420px at 82% -8%, rgba(220,38,38,.14), transparent 62%),
-    radial-gradient(620px 360px at 8% 104%, rgba(220,38,38,.07), transparent 66%);
+    radial-gradient(760px 420px at 82% -8%, rgba(225,6,0,.14), transparent 62%),
+    radial-gradient(620px 360px at 8% 104%, rgba(225,6,0,.07), transparent 66%);
   pointer-events:none; z-index:0;
 }
 body > *{ position:relative; z-index:1 }
@@ -91,12 +91,12 @@ button,input,select,textarea{ font-family:var(--body) }
 
 ::-webkit-scrollbar{ width:9px; height:9px }
 ::-webkit-scrollbar-track{ background:var(--void) }
-::-webkit-scrollbar-thumb{ background:#2A3252; border-radius:5px }
+::-webkit-scrollbar-thumb{ background:#2A2C31; border-radius:5px }
 ::-webkit-scrollbar-thumb:hover{ background:var(--crimson-dim) }
 
 /* ===================== masthead ===================== */
 .masthead{
-  background:linear-gradient(180deg, #0B1022 0%, rgba(11,16,34,.86) 100%);
+  background:linear-gradient(180deg, #141518 0%, rgba(20,21,24,.86) 100%);
   border-bottom:1px solid var(--edge);
   backdrop-filter:blur(8px);
   position:sticky; top:0; z-index:30;
@@ -110,7 +110,7 @@ button,input,select,textarea{ font-family:var(--body) }
 .mark{
   width:34px; height:34px; flex:none;
   border-radius:7px;
-  background:linear-gradient(150deg, var(--crimson) 0%, #8E1A1A 100%);
+  background:linear-gradient(150deg, var(--crimson) 0%, #B30500 100%);
   display:grid; place-items:center;
   font-family:var(--display); font-weight:800; font-size:19px;
   color:#fff;
@@ -149,7 +149,7 @@ button,input,select,textarea{ font-family:var(--body) }
 }
 .btn-primary{
   background:var(--crimson); color:#fff;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.17), 0 0 0 rgba(220,38,38,0);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.17), 0 0 0 rgba(225,6,0,0);
 }
 .btn-primary:hover{ background:var(--crimson-hot); box-shadow:inset 0 1px 0 rgba(255,255,255,.17), var(--glow) }
 .btn-primary:active{ transform:translateY(1px) }
@@ -215,7 +215,7 @@ button,input,select,textarea{ font-family:var(--body) }
 .field input::placeholder, .field textarea::placeholder{ color:var(--faint) }
 .field input:focus, .field select:focus, .field textarea:focus{
   outline:none; border-color:var(--crimson);
-  box-shadow:0 0 0 3px rgba(220,38,38,.13);
+  box-shadow:0 0 0 3px rgba(225,6,0,.13);
 }
 .field textarea{ resize:vertical; min-height:60px; font-family:var(--body) }
 .two{ display:grid; grid-template-columns:1fr 1fr; gap:11px }

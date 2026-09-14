@@ -22,7 +22,7 @@ export default function AdminNav() {
 
   return (
     <header
-      className="sticky top-0 z-20 flex flex-wrap items-center gap-x-6 gap-y-3 px-6 py-3"
+      className="sticky top-0 z-20 flex flex-wrap items-center gap-x-6 gap-y-3 px-6 py-4 md:px-10"
       style={{ background: 'var(--surface)', borderBottom: '1px solid var(--line)' }}
     >
       <Link href="/admin" className="shrink-0">

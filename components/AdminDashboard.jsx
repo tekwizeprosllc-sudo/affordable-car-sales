@@ -112,9 +112,14 @@ export default function AdminDashboard({ initialLeads, counts }) {
 
   return (
     <main>
-      <div className="mx-auto max-w-[1400px] px-6 py-8">
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-          <h1 className="font-display text-3xl font-black uppercase">Leads</h1>
+      <div className="mx-auto max-w-[1600px] px-6 py-10 md:px-10">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.2em]" style={{ color: 'var(--accent-text)' }}>
+              Lead Desk
+            </p>
+            <h1 className="mt-1.5 font-display text-4xl font-black uppercase leading-none">Leads</h1>
+          </div>
           <div className="flex items-center gap-2">
             <button
               onClick={simulateFb}
@@ -142,30 +147,26 @@ export default function AdminDashboard({ initialLeads, counts }) {
             </button>
           </div>
         </div>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div className="panel rounded-[5px] p-5">
-            <div className="font-display text-[32px] font-black leading-none text-crimson">{leads.length}</div>
-            <div className="mt-1 text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--muted)' }}>
-              Total Leads
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { label: 'Total Leads', value: leads.length, accent: '#E10600' },
+            { label: 'Today', value: todayCount, accent: '#E10600' },
+            { label: 'Needs Follow-Up', value: leads.filter((l) => l.status === 'new').length, accent: '#E8A33D' },
+            { label: 'From Facebook', value: channelCount('facebook'), accent: CHANNELS.facebook.color },
+          ].map((t) => (
+            <div key={t.label} className="panel relative overflow-hidden rounded-[6px] p-6">
+              <span className="absolute inset-y-0 left-0 w-1" style={{ background: t.accent }} />
+              <div className="font-display text-[40px] font-black leading-none" style={{ color: t.accent }}>
+                {t.value}
+              </div>
+              <div className="mt-2 text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: 'var(--muted)' }}>
+                {t.label}
+              </div>
             </div>
-          </div>
-          <div className="panel rounded-[5px] p-5">
-            <div className="font-display text-[32px] font-black leading-none text-crimson">{todayCount}</div>
-            <div className="mt-1 text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--muted)' }}>
-              Today
-            </div>
-          </div>
-          <div className="panel rounded-[5px] p-5">
-            <div className="font-display text-[32px] font-black leading-none text-crimson">
-              {leads.filter((l) => l.status === 'new').length}
-            </div>
-            <div className="mt-1 text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--muted)' }}>
-              Needs Follow-Up
-            </div>
-          </div>
+          ))}
         </div>
 
-        <section className="mt-8">
+        <section className="mt-10">
           <h2 className="font-display text-[13px] font-extrabold uppercase tracking-[0.16em]" style={{ color: 'var(--muted)' }}>
             Dealer Tools
           </h2>
@@ -192,7 +193,7 @@ export default function AdminDashboard({ initialLeads, counts }) {
           </div>
         </section>
 
-        <div className="mt-8 flex flex-wrap items-center gap-2">
+        <div className="mt-10 flex flex-wrap items-center gap-2">
           <span className="text-[10px] font-extrabold uppercase tracking-[0.14em]" style={{ color: 'var(--muted)' }}>
             Channel
           </span>
@@ -254,10 +255,10 @@ export default function AdminDashboard({ initialLeads, counts }) {
             </p>
           </div>
         ) : (
-          <div className="mt-6 flex flex-col gap-3">
+          <div className="mt-6 flex flex-col gap-4">
             {visible.map((lead) => (
-              <article key={lead.id} className="panel rounded-[5px] p-5">
-                <div className="flex flex-wrap items-start justify-between gap-4">
+              <article key={lead.id} className="panel rounded-[6px] p-6 transition duration-200 hover:-translate-y-0.5">
+                <div className="flex flex-wrap items-start justify-between gap-5">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span
@@ -287,7 +288,7 @@ export default function AdminDashboard({ initialLeads, counts }) {
                       </span>
                     </div>
 
-                    <h3 className="mt-2 font-display text-[19px] font-bold uppercase">{lead.name}</h3>
+                    <h3 className="mt-2.5 font-display text-[22px] font-bold uppercase">{lead.name}</h3>
 
                     <div className="mt-1.5 flex flex-wrap gap-4 text-[13px]">
                       {lead.phone && (
