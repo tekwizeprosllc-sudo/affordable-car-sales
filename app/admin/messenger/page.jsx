@@ -1,6 +1,7 @@
 import { isAuthed } from '@/lib/auth'
 import { listLeads, leadCounts } from '@/lib/db'
 import { getSettingsWithDefaults } from '@/lib/settings'
+import { getVehicleIndex } from '@/lib/vehicleIndex'
 import AdminLogin from '@/components/AdminLogin'
 import AdminMessenger from '@/components/admin/AdminMessenger'
 
@@ -14,6 +15,11 @@ export const metadata = {
 export default async function MessengerPage() {
   if (!isAuthed()) return <AdminLogin />
 
-  const [initialLeads, counts, settings] = await Promise.all([listLeads(), leadCounts(), getSettingsWithDefaults()])
-  return <AdminMessenger initialLeads={initialLeads} counts={counts} settings={settings} />
+  const [initialLeads, counts, settings, vehicleIndex] = await Promise.all([
+    listLeads(),
+    leadCounts(),
+    getSettingsWithDefaults(),
+    getVehicleIndex(),
+  ])
+  return <AdminMessenger initialLeads={initialLeads} counts={counts} settings={settings} vehicleIndex={vehicleIndex} />
 }

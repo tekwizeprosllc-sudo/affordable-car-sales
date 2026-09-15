@@ -1,6 +1,7 @@
 import { isAuthed } from '@/lib/auth'
 import { listLeads, leadCounts } from '@/lib/db'
 import { getSettingsWithDefaults } from '@/lib/settings'
+import { getVehicleIndex } from '@/lib/vehicleIndex'
 import AdminLogin from '@/components/AdminLogin'
 import AdminDashboard from '@/components/AdminDashboard'
 
@@ -15,8 +16,13 @@ export default async function AdminPage() {
   if (!isAuthed()) return <AdminLogin />
 
   try {
-    const [initialLeads, counts, settings] = await Promise.all([listLeads(), leadCounts(), getSettingsWithDefaults()])
-    return <AdminDashboard initialLeads={initialLeads} counts={counts} settings={settings} />
+    const [initialLeads, counts, settings, vehicleIndex] = await Promise.all([
+      listLeads(),
+      leadCounts(),
+      getSettingsWithDefaults(),
+      getVehicleIndex(),
+    ])
+    return <AdminDashboard initialLeads={initialLeads} counts={counts} settings={settings} vehicleIndex={vehicleIndex} />
   } catch (err) {
     return (
       <main className="grid min-h-screen place-items-center px-6" style={{ background: 'var(--bg)' }}>

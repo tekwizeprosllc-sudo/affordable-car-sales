@@ -18,17 +18,17 @@ test.describe('Admin sidebar navigation', () => {
 
   for (const [label, path, heading] of ROUTES) {
     test(`"${label}" nav item goes to ${path}`, async ({ page }) => {
-      await page.locator('nav').getByRole('link', { name: label }).click()
+      await page.getByRole('navigation', { name: 'Admin' }).getByRole('link', { name: label }).click()
       await expect(page).toHaveURL(new RegExp(`${path}$`))
       await expect(page.getByText(heading).first()).toBeVisible()
     })
   }
 
   test('View Site opens the public homepage in a new tab', async ({ page, context }) => {
-    await page.getByRole('button', { name: /staff/i }).click()
+    await page.getByRole('button', { name: 'Staff menu' }).click()
     const [publicPage] = await Promise.all([
       context.waitForEvent('page'),
-      page.getByRole('link', { name: /view site/i }).click(),
+      page.getByRole('menuitem', { name: /view site/i }).click(),
     ])
     await publicPage.waitForLoadState()
     await expect(publicPage.getByText('Drive More.')).toBeVisible()

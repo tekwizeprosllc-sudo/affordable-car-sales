@@ -1,0 +1,106 @@
+/* Dealer Command Center theme. Everything is scoped to .admin-theme so the
+   public site's light/dark palette in globals.css is untouched. The site
+   variables are remapped here too, so admin pages built on .panel/.field/
+   var(--surface) pick up the command-center palette without edits. */
+
+.admin-theme {
+  --admin-bg: #07090b;
+  --admin-sidebar: #080b0d;
+  --admin-surface: #0d1114;
+  --admin-surface-2: #11161a;
+  --admin-surface-3: #161c20;
+  --admin-border: rgba(255, 255, 255, 0.085);
+  --admin-border-strong: rgba(255, 255, 255, 0.15);
+  --admin-text: #f5f7f8;
+  --admin-muted: #89939c;
+  --admin-faint: #5d666e;
+  --admin-red: #f20d0d;
+  --admin-red-hot: #ff1a14;
+  --admin-green: #2bd67b;
+
+  --bg: var(--admin-bg);
+  --surface: var(--admin-surface);
+  --surface-2: var(--admin-surface-2);
+  --fg: var(--admin-text);
+  --muted: var(--admin-muted);
+  --line: var(--admin-border);
+  --line-strong: var(--admin-border-strong);
+  --scrim: 7, 9, 11;
+  --accent-text: #ff4a40;
+
+  background: var(--admin-bg);
+  color: var(--admin-text);
+  font-family: Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.admin-theme ::selection {
+  background: var(--admin-red);
+  color: #fff;
+}
+
+/* Existing site components used on admin pages, restated for the admin
+   palette. Doubled class keeps these ahead of globals.css's
+   `:root:not(.dark) .btn-red` if the html class hasn't flipped yet. */
+.admin-theme.admin-theme .btn-red {
+  background: linear-gradient(180deg, #f5140f, #cf0a06);
+  border-color: #ff2a22;
+  color: #fff;
+  box-shadow: 0 0 22px -8px rgba(242, 13, 13, 0.85);
+}
+.admin-theme .panel {
+  background: var(--admin-surface);
+  border-color: var(--admin-border);
+}
+.admin-theme .field {
+  background: var(--admin-bg);
+  border-color: var(--admin-border-strong);
+}
+
+/* Lead table. One markup for every width; container queries reshape the
+   grid as the inbox narrows (detail panel open at 1280-1440, tablets,
+   phones) instead of rendering a second copy of each row. */
+.admin-theme .adm-table {
+  container-type: inline-size;
+}
+.admin-theme .adm-table-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) 100px minmax(0, 1.2fr) minmax(0, 1.3fr) 92px 126px;
+  grid-template-areas: 'cust src veh msg status next';
+  column-gap: 14px;
+  align-items: center;
+}
+.admin-theme .adm-c-cust { grid-area: cust; min-width: 0; }
+.admin-theme .adm-c-src { grid-area: src; min-width: 0; }
+.admin-theme .adm-c-veh { grid-area: veh; min-width: 0; }
+.admin-theme .adm-c-msg { grid-area: msg; min-width: 0; }
+.admin-theme .adm-c-status { grid-area: status; min-width: 0; }
+.admin-theme .adm-c-next { grid-area: next; min-width: 0; }
+.admin-theme .adm-avatar-src { display: none; }
+
+@container (max-width: 800px) {
+  .admin-theme .adm-table-grid {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.15fr) minmax(0, 1.3fr) 88px 118px;
+    grid-template-areas: 'cust veh msg status next';
+    column-gap: 12px;
+  }
+  .admin-theme .adm-c-src { display: none; }
+  .admin-theme .adm-avatar-src { display: grid; }
+}
+@container (max-width: 620px) {
+  .admin-theme .adm-table-grid {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 88px 118px;
+    grid-template-areas: 'cust veh status next';
+  }
+  .admin-theme .adm-c-msg { display: none; }
+}
+@container (max-width: 480px) {
+  .admin-theme .adm-table-head { display: none; }
+  .admin-theme .adm-table-grid {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'cust status' 'veh next' 'msg msg';
+    row-gap: 8px;
+  }
+  .admin-theme .adm-c-msg { display: block; }
+}
+

@@ -18,14 +18,14 @@ test.describe('Admin auth', () => {
   test('logs in and shows the dashboard chrome', async ({ page }) => {
     await login(page)
     await expect(page.getByText('Dealer Command Center')).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Dashboard' })).toBeVisible()
+    await expect(page.getByRole('navigation', { name: 'Admin' }).getByRole('link', { name: 'Dashboard' })).toBeVisible()
     await expect(page.getByText('Affordable Car Sales', { exact: true })).toBeVisible()
   })
 
   test('sign out returns to the login screen', async ({ page }) => {
     await login(page)
-    await page.getByRole('button', { name: /staff/i }).click()
-    await page.getByRole('button', { name: /sign out/i }).click()
+    await page.getByRole('button', { name: 'Staff menu' }).click()
+    await page.getByRole('menuitem', { name: /sign out/i }).click()
     await expect(page.getByText('Staff access only')).toBeVisible()
   })
 })

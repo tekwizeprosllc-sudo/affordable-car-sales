@@ -1,50 +1,153 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
-import { Facebook, Globe, Car, Phone, Mail, CalendarClock, Zap, Loader2, SlidersHorizontal } from 'lucide-react';
-import { CHANNELS, leadChannel, STATUS_COLORS } from '@/lib/leads';
-import AdminTopbar from './AdminTopbar';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  Facebook, Globe, Phone, Mail, Clock, CalendarDays, MessageSquare, CheckCircle2, CircleDot,
+  Trophy, ChevronDown, Filter, Zap, Loader2, Check,
+} from 'lucide-react';
+import { CHANNELS, leadChannel } from '@/lib/leads';
+import { useAdmin } from './AdminShell';
 import LeadDetailPanel from './LeadDetailPanel';
-import NewLeadModal from './NewLeadModal';
+import { statusBadge, initials, dueLabel } from './theme';
 
 const STATUS_TABS = ['', 'new', 'contacted', 'scheduled', 'showed', 'won', 'lost'];
 const STATUS_TAB_LABELS = { '': 'All Leads', new: 'New', contacted: 'Contacted', scheduled: 'Scheduled', showed: 'Showed', won: 'Won', lost: 'Lost' };
-const CHANNEL_ICONS = { facebook: Facebook, website: Globe };
+const ACTION_ICONS = {
+  Call: Phone,
+  Text: MessageSquare,
+  Email: Mail,
+  'Follow Up': Clock,
+  'Schedule Test Drive': CalendarDays,
+  'Send Photos': Mail,
+  'Confirm Availability': CheckCircle2,
+  Other: CircleDot,
+};
 
-function timeAgo(iso) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const m = Math.round(diff / 60000);
+function shortAgo(iso) {
+  const m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
   if (m < 1) return 'just now';
-  if (m < 60) return `${m}m ago`;
+  if (m < 60) return `${m} minute${m === 1 ? '' : 's'} ago`;
   const h = Math.round(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.round(h / 24)}d ago`;
+  if (h < 24) return `${h} hour${h === 1 ? '' : 's'} ago`;
+  const d = Math.round(h / 24);
+  return `${d} day${d === 1 ? '' : 's'} ago`;
 }
 
-function initials(name) {
-  return (name || '?').trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase()).join('');
+function prettyPreferred(lead) {
+  if (!lead.preferred_date) return (lead.preferred_time || '').replace(/\s*\(.*\)\s*$/, '');
+  const [y, mo, d] = lead.preferred_date.split('-').map(Number);
+  const date = new Date(y, mo - 1, d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  const time = lead.preferred_time ? lead.preferred_time.replace(/\s*\(.*\)\s*$/, '') : '';
+  return [date, time].filter(Boolean).join(', ');
 }
 
-function nextActionDisplay(lead) {
-  if (!lead.next_action) return null;
-  const overdue = lead.next_action_due && new Date(lead.next_action_due) < new Date();
-  return { text: lead.next_action, due: lead.next_action_due, overdue };
+// What the Next Action column shows. A staff-set action wins; otherwise the
+// cell suggests the obvious step from the lead's real state (shown muted so
+// it doesn't read as something staff already committed to).
+function nextActionFor(lead) {
+  if (lead.next_action) {
+    const overdue = lead.next_action_due && new Date(lead.next_action_due) < new Date() && !['won', 'lost'].includes(lead.status);
+    return {
+      icon: ACTION_ICONS[lead.next_action] || CircleDot,
+      label: lead.next_action,
+      sub: lead.next_action_due ? (overdue ? `Overdue · ${dueLabel(lead.next_action_due)}` : dueLabel(lead.next_action_due)) : 'No due time',
+      tone: overdue ? 'urgent' : 'set',
+    };
+  }
+  switch (lead.status) {
+    case 'new':
+      if (lead.phone) return { icon: Phone, label: 'Call', sub: 'ASAP', tone: 'urgent' };
+      if (lead.email) return { icon: Mail, label: 'Email', sub: 'ASAP', tone: 'urgent' };
+      return { icon: MessageSquare, label: 'Reply', sub: 'ASAP', tone: 'urgent' };
+    case 'scheduled':
+      return lead.preferred_date || lead.preferred_time
+        ? { icon: CalendarDays, label: 'Test Drive', sub: prettyPreferred(lead), tone: 'set' }
+        : { icon: CalendarDays, label: 'Confirm Time', sub: 'Not set', tone: 'suggest' };
+    case 'contacted':
+      return { icon: Clock, label: 'Follow Up', sub: 'Not scheduled', tone: 'suggest' };
+    case 'showed':
+      return { icon: Clock, label: 'Follow Up', sub: 'After visit', tone: 'suggest' };
+    case 'won':
+      return { icon: Trophy, label: 'Sold', sub: 'Closed', tone: 'suggest' };
+    default:
+      return { icon: Clock, label: 'Nurture', sub: 'No action', tone: 'suggest' };
+  }
 }
 
-export default function LeadsWorkspace({ initialLeads, counts, settings, showHero, lockChannel, heading, afterGrid }) {
+function SourcePill({ source }) {
+  const key = leadChannel(source);
+  const Icon = key === 'facebook' ? Facebook : Globe;
+  return (
+    <span
+      className="adm-src-pill inline-flex h-[28px] items-center gap-1.5 rounded-[5px] px-2.5 text-[12.5px] font-medium text-[#e6eaed]"
+      style={{ background: '#11161a', border: '1px solid var(--admin-border-strong)' }}
+      title={CHANNELS[key].label}
+      role="img"
+      aria-label={CHANNELS[key].label}
+    >
+      {key === 'facebook' ? (
+        <span className="grid h-[16px] w-[16px] shrink-0 place-items-center rounded-full" style={{ background: '#1877f2' }}>
+          <Icon size={10} strokeWidth={0} fill="#fff" />
+        </span>
+      ) : (
+        <Icon size={15} strokeWidth={1.8} className="shrink-0 text-[#aab3ba]" />
+      )}
+      <span className="adm-src-label" aria-hidden="true">{CHANNELS[key].label}</span>
+    </span>
+  );
+}
+
+// Only displayed once the Source column collapses (see admin.css), so the
+// channel is still visible on narrower desktops.
+function AvatarChannel({ source }) {
+  const key = leadChannel(source);
+  return (
+    <span
+      className="adm-avatar-src absolute -bottom-1 -right-1 h-[17px] w-[17px] place-items-center rounded-full"
+      style={{ background: key === 'facebook' ? '#1877f2' : '#2a3238', boxShadow: '0 0 0 2px var(--admin-surface)' }}
+      role="img"
+      aria-label={CHANNELS[key].label}
+    >
+      {key === 'facebook' ? <Facebook size={9} strokeWidth={0} fill="#fff" /> : <Globe size={10} className="text-[#d5dade]" />}
+    </span>
+  );
+}
+
+export function StatusBadge({ status }) {
+  const b = statusBadge(status);
+  return (
+    <span className="adm-badge" style={{ color: b.fg, background: b.bg, borderColor: b.border }}>
+      {b.label}
+    </span>
+  );
+}
+
+export default function LeadsWorkspace({
+  initialLeads, counts, settings, showHero, lockChannel, heading, afterGrid, vehicleIndex, showSimulate,
+}) {
+  const router = useRouter();
+  const { search } = useAdmin();
   const [leads, setLeads] = useState(initialLeads || []);
   const [selectedId, setSelectedId] = useState(null);
+  const [userClosed, setUserClosed] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
   const [channel, setChannel] = useState(lockChannel || '');
   const [sort, setSort] = useState('newest');
-  const [search, setSearch] = useState('');
-  const [newLeadOpen, setNewLeadOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
   const [simulating, setSimulating] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(true);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const filterRef = useRef(null);
 
-  // The detail panel is expensive to mount (it fetches vehicle + timeline data),
-  // so only one copy exists at a time — desktop sidebar or mobile drawer.
+  // router.refresh() (after a status change or a new lead) hands us fresh
+  // server data; adopt it so the inbox, KPIs and sidebar badges agree.
   useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1024px)');
+    setLeads(initialLeads || []);
+  }, [initialLeads]);
+
+  // The detail panel fetches vehicle + timeline data when it mounts, so only
+  // one copy exists: docked beside the table at xl, a drawer below that.
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1280px)');
     setIsDesktop(mq.matches);
     const onChange = (e) => setIsDesktop(e.matches);
     mq.addEventListener('change', onChange);
@@ -52,23 +155,28 @@ export default function LeadsWorkspace({ initialLeads, counts, settings, showHer
   }, []);
 
   const statusCounts = useMemo(() => {
-    const acc = { '': leads.length };
-    for (const l of leads) acc[l.status] = (acc[l.status] || 0) + 1;
+    const scoped = lockChannel ? leads.filter((l) => leadChannel(l.source) === lockChannel) : leads;
+    const acc = { '': scoped.length };
+    for (const l of scoped) acc[l.status] = (acc[l.status] || 0) + 1;
     return acc;
-  }, [leads]);
+  }, [leads, lockChannel]);
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
-    let list = leads.filter((l) => {
+    const list = leads.filter((l) => {
       if (statusFilter && l.status !== statusFilter) return false;
       if (channel && leadChannel(l.source) !== channel) return false;
       if (term) {
-        const haystack = [l.name, l.phone, l.email, l.vehicle_title, l.message].filter(Boolean).join(' ').toLowerCase();
+        const v = vehicleIndex?.[String(l.vehicle_id)] || {};
+        const haystack = [l.name, l.phone, l.email, l.vehicle_title, l.message, v.stock, v.vin]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
         if (!haystack.includes(term)) return false;
       }
       return true;
     });
-    list = [...list].sort((a, b) => {
+    return [...list].sort((a, b) => {
       if (sort === 'oldest') return new Date(a.created_at) - new Date(b.created_at);
       if (sort === 'followup') {
         if (!a.next_action_due && !b.next_action_due) return new Date(b.created_at) - new Date(a.created_at);
@@ -78,196 +186,272 @@ export default function LeadsWorkspace({ initialLeads, counts, settings, showHer
       }
       return new Date(b.created_at) - new Date(a.created_at);
     });
-    return list;
-  }, [leads, statusFilter, channel, search, sort]);
+  }, [leads, statusFilter, channel, search, sort, vehicleIndex]);
+
+  // Open on a live lead instead of an empty panel: newest needing a reply,
+  // otherwise newest. Skipped once staff close the panel themselves.
+  useEffect(() => {
+    if (!isDesktop || userClosed || selectedId != null) return;
+    const pick = filtered.find((l) => l.status === 'new') || filtered[0];
+    if (pick) setSelectedId(pick.id);
+  }, [isDesktop, userClosed, selectedId, filtered]);
+
+  useEffect(() => {
+    if (!filterOpen) return;
+    const close = (e) => {
+      if (filterRef.current && !filterRef.current.contains(e.target)) setFilterOpen(false);
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [filterOpen]);
 
   const selected = leads.find((l) => l.id === selectedId) || null;
 
+  function select(id) {
+    setSelectedId(id);
+    setUserClosed(false);
+  }
+
+  function closePanel() {
+    setSelectedId(null);
+    setUserClosed(true);
+  }
+
   function updateLeadInList(updated) {
     setLeads((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
+    router.refresh();
   }
 
   async function simulateFbLead() {
     setSimulating(true);
     await fetch('/api/admin/simulate-fb-lead', { method: 'POST' });
-    const res = await fetch('/api/admin/leads');
-    const json = await res.json();
-    setLeads(json.leads || []);
+    router.refresh();
     setSimulating(false);
   }
 
+  const panel = selected && (
+    <LeadDetailPanel lead={selected} onClose={closePanel} onUpdate={updateLeadInList} settings={settings} />
+  );
+
   return (
-    <div className="flex h-screen flex-col">
-      <AdminTopbar
-        search={search}
-        onSearch={setSearch}
-        needsReplyCount={counts?.needsReply}
-        onNewLead={() => setNewLeadOpen(true)}
-      />
+    <div className="p-4 min-[1600px]:p-5">
+      {showHero && <div className="mb-4 flex flex-col gap-4">{showHero}</div>}
 
-      <div className="flex-1 overflow-y-auto p-4 md:p-6">
-        {showHero && (
-          <div className="mb-5 flex flex-col gap-5">
-            {showHero}
-          </div>
-        )}
-
-        <div className="grid gap-5 lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_440px]">
-          <div className="flex min-w-0 flex-col">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-display text-xl font-black uppercase">{heading || 'Leads Inbox'}</h2>
-              <div className="flex items-center gap-2">
-                <button onClick={simulateFbLead} disabled={simulating} className="btn-ghost py-1.5 text-[10px] disabled:opacity-50">
-                  {simulating ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />} Simulate FB Reply
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_412px] min-[1600px]:grid-cols-[minmax(0,1fr)_460px]">
+        <section className="adm-card adm-table min-w-0 overflow-hidden" aria-label={heading || 'Leads Inbox'}>
+          <div className="flex flex-wrap items-center justify-between gap-3 px-5 pb-1 pt-4">
+            <h2 className="font-display text-[26px] font-semibold leading-none tracking-[0.01em] text-white">
+              {heading || 'Leads Inbox'}
+            </h2>
+            <div className="flex items-center gap-2">
+              {showSimulate && (
+                <button onClick={simulateFbLead} disabled={simulating} className="adm-btn h-[36px] text-[12.5px]">
+                  {simulating ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />} Simulate FB lead
                 </button>
-                <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort by" className="field h-9 w-auto text-[11px]">
+              )}
+              <label className="relative">
+                <span className="sr-only">Sort by</span>
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                  aria-label="Sort by"
+                  className="adm-input h-[36px] w-[150px] cursor-pointer appearance-none bg-[#0b0f12] pr-8 text-[13px]"
+                >
                   <option value="newest">Newest First</option>
                   <option value="oldest">Oldest First</option>
                   <option value="followup">Follow-up Due</option>
                 </select>
-              </div>
+                <ChevronDown size={15} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#aab3ba]" />
+              </label>
+              {!lockChannel && (
+                <div className="relative" ref={filterRef}>
+                  <button
+                    onClick={() => setFilterOpen((v) => !v)}
+                    className="relative grid h-[36px] w-[38px] place-items-center rounded-[5px] text-[#c9d0d5] transition hover:text-white"
+                    style={{ background: '#0b0f12', border: `1px solid ${channel ? 'rgba(242,13,13,0.6)' : 'var(--admin-border-strong)'}` }}
+                    aria-label="Filter by channel"
+                    aria-expanded={filterOpen}
+                  >
+                    <Filter size={16} strokeWidth={1.8} />
+                    {channel && <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#f20d0d]" />}
+                  </button>
+                  {filterOpen && (
+                    <div
+                      className="absolute right-0 top-full z-30 mt-2 w-44 rounded-[6px] py-1"
+                      style={{ background: 'var(--admin-surface-2)', border: '1px solid var(--admin-border-strong)', boxShadow: '0 18px 40px -12px rgba(0,0,0,0.8)' }}
+                    >
+                      <p className="px-3 pb-1 pt-2 text-[11px] font-semibold text-[#89939c]">Channel</p>
+                      {['', 'facebook', 'website'].map((c) => (
+                        <button
+                          key={c || 'all'}
+                          onClick={() => {
+                            setChannel(c);
+                            setFilterOpen(false);
+                          }}
+                          className="flex w-full items-center justify-between px-3 py-2 text-left text-[13px] text-[#e6eaed] transition hover:bg-white/[0.04]"
+                        >
+                          {c ? CHANNELS[c].label : 'All channels'}
+                          {channel === c && <Check size={14} className="text-[#ff4a42]" />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
+          </div>
 
-            <div className="mb-3 flex flex-wrap items-center gap-1.5">
-              {STATUS_TABS.map((s) => (
+          <div className="adm-scroll flex overflow-x-auto px-3" role="tablist" aria-label="Lead status">
+            {STATUS_TABS.map((s) => {
+              const active = statusFilter === s;
+              return (
                 <button
                   key={s || 'all'}
+                  role="tab"
+                  aria-selected={active}
                   onClick={() => setStatusFilter(s)}
-                  className={`rounded-[3px] px-2.5 py-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.06em] transition ${statusFilter === s ? 'bg-crimson text-white' : ''}`}
-                  style={statusFilter === s ? undefined : { background: 'var(--surface-2)', color: 'var(--muted)', border: '1px solid var(--line)' }}
+                  className="relative shrink-0 whitespace-nowrap px-2.5 py-3 text-[13px] font-medium transition min-[1600px]:px-3 min-[1600px]:text-[13.5px]"
+                  style={{ color: active ? '#ff4a42' : '#c9d0d5' }}
                 >
                   {STATUS_TAB_LABELS[s]} ({statusCounts[s] || 0})
+                  {active && (
+                    <span
+                      className="absolute inset-x-2 bottom-0 h-[2px] rounded-full"
+                      style={{ background: '#f20d0d', boxShadow: '0 0 10px rgba(242,13,13,0.9)' }}
+                    />
+                  )}
                 </button>
-              ))}
-            </div>
+              );
+            })}
+          </div>
 
-            {!lockChannel && (
-            <div className="mb-4 flex items-center gap-1.5">
-              <SlidersHorizontal size={12} style={{ color: 'var(--muted)' }} />
-              {['', 'facebook', 'website'].map((c) => (
-                <button
-                  key={c || 'all'}
-                  onClick={() => setChannel(c)}
-                  className={`rounded-[3px] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.06em] transition ${channel === c ? 'bg-crimson text-white' : ''}`}
-                  style={channel === c ? undefined : { background: 'var(--surface-2)', color: 'var(--muted)', border: '1px solid var(--line)' }}
-                >
-                  {c === '' ? 'All Channels' : CHANNELS[c].label}
-                </button>
-              ))}
-            </div>
-            )}
+          <div
+            className="adm-table-head adm-table-grid h-[42px] px-4 text-[12.5px] font-medium text-[#89939c]"
+            style={{ borderTop: '1px solid var(--admin-border)', borderBottom: '1px solid var(--admin-border)' }}
+          >
+            <span className="adm-c-cust pl-[52px]">Customer</span>
+            <span className="adm-c-src adm-h-src">Source</span>
+            <span className="adm-c-veh">Vehicle</span>
+            <span className="adm-c-msg">Message Preview</span>
+            <span className="adm-c-status">Status</span>
+            <span className="adm-c-next">Next Action</span>
+          </div>
 
-            {filtered.length === 0 ? (
-              <div className="panel flex-1 rounded-[6px] p-12 text-center">
-                <p className="font-display text-lg font-bold uppercase">No leads match</p>
-                <p className="mt-1 text-[12.5px]" style={{ color: 'var(--muted)' }}>
-                  {leads.length === 0 ? 'Leads from your site, Ava, and Facebook will show up here.' : 'Try a different filter or search.'}
-                </p>
-              </div>
-            ) : (
-              <div className="panel overflow-hidden rounded-[6px]">
-                <div className="max-h-[calc(100vh-280px)] overflow-y-auto">
-                  {filtered.map((lead) => {
-                    const ch = CHANNELS[leadChannel(lead.source)];
-                    const Icon = CHANNEL_ICONS[ch.key];
-                    const na = nextActionDisplay(lead);
-                    const isSelected = lead.id === selectedId;
-                    return (
-                      <button
-                        key={lead.id}
-                        onClick={() => setSelectedId(lead.id)}
-                        className="flex w-full items-center gap-3 px-4 py-3 text-left transition"
-                        style={{
-                          borderBottom: '1px solid var(--line)',
-                          background: isSelected ? 'rgba(225,6,0,0.1)' : 'transparent',
-                          boxShadow: isSelected ? 'inset 3px 0 0 #E10600' : na?.overdue ? 'inset 3px 0 0 rgba(225,6,0,0.5)' : 'inset 3px 0 0 transparent',
-                        }}
+          {filtered.length === 0 ? (
+            <div className="px-6 py-16 text-center">
+              <p className="text-[15px] font-semibold text-white">No leads match</p>
+              <p className="mt-1 text-[13px] text-[#89939c]">
+                {leads.length === 0 ? 'Leads from your site, Ava, and Facebook will show up here.' : 'Try a different status, channel, or search.'}
+              </p>
+            </div>
+          ) : (
+            <div className="px-1 pb-1">
+              {filtered.map((lead) => {
+                const na = nextActionFor(lead);
+                const NaIcon = na.icon;
+                const stock = vehicleIndex?.[String(lead.vehicle_id)]?.stock;
+                const isSelected = lead.id === selectedId;
+                return (
+                  <button
+                    key={lead.id}
+                    onClick={() => select(lead.id)}
+                    data-selected={isSelected}
+                    aria-pressed={isSelected}
+                    className="adm-row adm-table-grid"
+                  >
+                    <span className="adm-c-cust flex items-center gap-3">
+                      <span
+                        className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full text-[13px] font-semibold text-[#e6eaed]"
+                        style={{ background: '#1a2025', border: '1px solid var(--admin-border-strong)' }}
                       >
-                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-crimson text-[11px] font-extrabold text-white">
-                          {initials(lead.name)}
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="truncate text-[13.5px] font-bold">{lead.name}</span>
-                            <span className="inline-flex items-center gap-1 rounded-[2px] px-1.5 py-0.5 text-[8.5px] font-extrabold uppercase tracking-[0.08em] text-white" style={{ background: ch.color }}>
-                              <Icon size={9} /> {ch.short}
-                            </span>
-                            <span className="text-[10.5px]" style={{ color: 'var(--muted)' }}>{timeAgo(lead.created_at)}</span>
-                          </div>
-                          {lead.vehicle_title && (
-                            <p className="mt-0.5 flex items-center gap-1 truncate text-[11px]" style={{ color: 'var(--muted)' }}>
-                              <Car size={10} /> {lead.vehicle_title}
-                            </p>
-                          )}
-                          {lead.message && (
-                            <p className="mt-0.5 truncate text-[11.5px]" style={{ color: 'var(--muted)' }}>{lead.message}</p>
-                          )}
-                        </div>
-                        <div className="flex shrink-0 flex-col items-end gap-1.5">
-                          <span
-                            className="rounded-[2px] px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-[0.1em] text-white"
-                            style={{ background: STATUS_COLORS[lead.status] || '#5C6066' }}
-                          >
-                            {lead.status}
+                        {initials(lead.name)}
+                        <AvatarChannel source={lead.source} />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-[14px] font-semibold text-white">{lead.name}</span>
+                        <span className="block truncate text-[12px] text-[#89939c]">{shortAgo(lead.created_at)}</span>
+                      </span>
+                    </span>
+
+                    <span className="adm-c-src">
+                      <SourcePill source={lead.source} />
+                    </span>
+
+                    <span className="adm-c-veh">
+                      {lead.vehicle_title ? (
+                        <>
+                          <span className="block truncate text-[13.5px] font-medium text-[#eef1f3]">{lead.vehicle_title}</span>
+                          <span className="block truncate text-[12px] text-[#89939c]">
+                            {stock ? `Stock #${stock}` : lead.type === 'vehicle_request' ? 'Car request' : ' '}
                           </span>
-                          {na && (
-                            <span
-                              className="flex items-center gap-1 text-[10px] font-bold"
-                              style={{ color: na.overdue ? '#E10600' : 'var(--muted)' }}
-                            >
-                              <CalendarClock size={10} /> {na.text}
-                            </span>
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
+                        </>
+                      ) : (
+                        <span className="text-[13px] text-[#7c868e]">No vehicle</span>
+                      )}
+                    </span>
 
-          <div className="hidden lg:block">
-            {selected && isDesktop ? (
-              <div className="sticky top-6">
-                <LeadDetailPanel lead={selected} onClose={() => setSelectedId(null)} onUpdate={updateLeadInList} settings={settings} />
-              </div>
-            ) : (
-              <div className="panel grid h-64 place-items-center rounded-[6px] text-center">
+                    <span className="adm-c-msg line-clamp-2 text-[13px] leading-[1.4] text-[#c9d0d5]">
+                      {lead.message || <span className="text-[#7c868e]">No message</span>}
+                    </span>
+
+                    <span className="adm-c-status">
+                      <StatusBadge status={lead.status} />
+                    </span>
+
+                    <span className="adm-c-next flex items-center gap-2.5">
+                      <NaIcon
+                        size={18}
+                        strokeWidth={1.8}
+                        className="shrink-0"
+                        style={{ color: na.tone === 'urgent' ? '#ff4a42' : na.tone === 'set' ? '#d5dade' : '#7c868e' }}
+                      />
+                      <span className="min-w-0">
+                        <span
+                          className="block truncate text-[13px] font-medium"
+                          style={{ color: na.tone === 'suggest' ? '#aab3ba' : '#f5f7f8' }}
+                        >
+                          {na.label}
+                        </span>
+                        <span
+                          className="block truncate text-[11.5px]"
+                          style={{ color: na.tone === 'urgent' ? '#ff6a62' : '#89939c' }}
+                        >
+                          {na.sub}
+                        </span>
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {isDesktop && (
+          <div className="sticky top-4 hidden xl:block">
+            {panel || (
+              <div className="adm-card grid h-[320px] place-items-center px-8 text-center">
                 <div>
-                  <p className="font-display text-[15px] font-bold uppercase" style={{ color: 'var(--muted)' }}>
-                    Select a lead
-                  </p>
-                  <p className="mt-1 text-[12px]" style={{ color: 'var(--muted)' }}>
-                    Click any row to see details, contact actions, and history.
+                  <p className="text-[15px] font-semibold text-white">{leads.length ? 'No lead selected' : 'No leads yet'}</p>
+                  <p className="mt-1 text-[13px] text-[#89939c]">
+                    {leads.length ? 'Pick a row to see contact actions, the vehicle, and history.' : 'New leads will open here automatically.'}
                   </p>
                 </div>
               </div>
             )}
           </div>
-        </div>
-
-        {afterGrid && <div className="mt-6">{afterGrid}</div>}
+        )}
       </div>
 
+      {afterGrid && <div className="mt-4">{afterGrid}</div>}
+
       {selected && !isDesktop && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="absolute inset-0 bg-black/70" onClick={() => setSelectedId(null)} />
-          <div className="absolute inset-x-0 bottom-0 top-16 overflow-hidden rounded-t-[10px]">
-            <LeadDetailPanel lead={selected} onClose={() => setSelectedId(null)} onUpdate={updateLeadInList} settings={settings} />
+        <div className="fixed inset-0 z-40 xl:hidden">
+          <div className="absolute inset-0 bg-black/75" onClick={closePanel} />
+          <div className="absolute inset-x-0 bottom-0 top-12 overflow-hidden rounded-t-[10px] md:left-auto md:top-0 md:w-[460px] md:rounded-none">
+            {panel}
           </div>
         </div>
-      )}
-
-      {newLeadOpen && (
-        <NewLeadModal
-          onClose={() => setNewLeadOpen(false)}
-          onCreated={async () => {
-            const res = await fetch('/api/admin/leads');
-            const json = await res.json();
-            setLeads(json.leads || []);
-          }}
-        />
       )}
     </div>
   );

@@ -56,8 +56,12 @@ too. `/admin` requires `ADMIN_PASSWORD` to be set (by design, see `lib/auth.js`
 
 ## Admin area architecture (Dealer Command Center)
 The admin was rebuilt around a sidebar shell + shared leads workspace:
-- `components/admin/AdminShell.jsx` — sidebar layout, holds the mobile-drawer
-  toggle context (`useAdminSidebarToggle`) that `AdminTopbar`'s hamburger reads.
+- `components/admin/AdminShell.jsx` — sidebar + the one shared `AdminTopbar` +
+  the New Lead modal. `useAdmin()` exposes `{search, setSearch, counts,
+  toggleSidebar, openNewLead}`; pages don't render their own top bar. Search
+  filters live on the leads-workspace routes and jumps to `/admin/leads` on
+  Enter elsewhere. Mutations call `router.refresh()` so KPIs/badges stay true;
+  `LeadsWorkspace` re-adopts `initialLeads` when that happens.
 - `components/admin/LeadsWorkspace.jsx` — the leads inbox + detail panel. Used
   directly by `/admin` (with the banner+KPI hero via `AdminDashboard.jsx`),
   `/admin/leads` (no hero), and `/admin/messenger` (via `AdminMessenger.jsx`,
@@ -77,6 +81,30 @@ The admin was rebuilt around a sidebar shell + shared leads workspace:
   more obvious brand shades (Facebook blue, a lighter amber/green/teal) because
   those failed WCAG AA contrast for white text at the ~9px badge size; axe
   caught this in `tests/accessibility.spec.js` — rerun it if you touch these.
+
+## Admin styling
+- Admin is always dark: `app/layout.jsx`'s theme script forces `.dark` on
+  `/admin*`, and `useForceDarkTheme()` covers client-side navigation in.
+- `app/admin/admin.css` holds the `.admin-theme` tokens (`--admin-*`), remaps
+  the site vars (`--surface`, `--line`, …) inside that wrapper so older admin
+  pages inherit the palette, and the lead-table grid (container queries collapse
+  Source → avatar badge ≤800px, hide Message ≤620px, stack ≤480px).
+- The reusable `adm-*` classes (`adm-card`, `adm-btn`, `adm-input`, `adm-badge`,
+  `adm-row`) live in `app/globals.css` under `@layer components` as
+  `:where(.admin-theme) .adm-x`. That exact form matters: `.admin-theme .adm-x`
+  outranks Tailwind utilities (so `h-[44px]` on an `adm-btn` silently does
+  nothing), while a fully zero-specificity `:where(.admin-theme .adm-x)` loses to
+  preflight's element resets (buttons go transparent, selects lose padding).
+- `h1–h4` get the Barlow display face globally; add `font-sans` on admin
+  headings that should use the UI font (e.g. the lead name in the panel).
+- lucide-react is pinned old (0.268): newer names like `CircleCheck`,
+  `CircleHelp` don't exist — use `CheckCircle2`, `HelpCircle`. A missing icon
+  shows up only at runtime as "Element type is invalid", not at build.
+
+## Shell gotcha: don't `pkill -f` the dev server by path
+`pkill -f "affordable-car-sales/node_modules/.bin/next dev"` also matches the
+bash process running that very command line and kills it (exit 144, rest of the
+command silently skipped). Kill by port instead: `kill $(fuser 3000/tcp)`.
 
 ## Playwright (`npm run test:e2e`)
 Only the Chromium binary is installed (`npx playwright install chromium`) —

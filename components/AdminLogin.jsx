@@ -3,12 +3,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, Loader2 } from 'lucide-react';
 import Logo from './Logo';
+import { useForceDarkTheme } from './admin/AdminShell';
 
 export default function AdminLogin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  useForceDarkTheme();
 
   async function submit(e) {
     e.preventDefault();

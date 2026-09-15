@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import { MapPin, Phone, Clock, Check, Loader2 } from 'lucide-react';
-import AdminTopbar from './AdminTopbar';
 import { DEALER } from '@/lib/site';
 
 export default function AdminSettings({ initialSettings }) {
@@ -29,10 +28,8 @@ export default function AdminSettings({ initialSettings }) {
   }
 
   return (
-    <div className="flex h-screen flex-col">
-      <AdminTopbar search="" onSearch={() => {}} needsReplyCount={0} onNewLead={() => {}} />
-
-      <div className="flex-1 overflow-y-auto p-4 md:p-6">
+    <div>
+      <div className="p-4 md:p-6">
         <h1 className="mb-5 font-display text-xl font-black uppercase">Settings</h1>
 
         <div className="grid gap-5 lg:grid-cols-2">

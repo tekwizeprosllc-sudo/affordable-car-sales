@@ -12,7 +12,10 @@ const themeInitScript = `
 (function() {
   try {
     var stored = localStorage.getItem('theme');
-    var isDark = stored ? stored === 'dark' : true;
+    // Staff tooling is always the dark command-center theme, whatever the
+    // visitor picked on the public site.
+    var isAdmin = location.pathname.indexOf('/admin') === 0;
+    var isDark = isAdmin || (stored ? stored === 'dark' : true);
     document.documentElement.classList.toggle('dark', isDark);
   } catch (e) {}
 })();

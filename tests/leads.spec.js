@@ -16,18 +16,18 @@ test.describe('Leads workspace', () => {
     await page.getByPlaceholder('Vehicle (optional)').fill('Test Vehicle')
     await page.getByRole('button', { name: /add lead/i }).click()
 
-    await expect(page.getByText(name)).toBeVisible()
+    const row = page.locator('button.adm-row', { hasText: name })
+    await expect(row).toBeVisible()
 
     // Selecting the row opens the detail panel with working contact actions.
-    await page.getByText(name).click()
-    const panelHeading = page.getByRole('heading', { name: name.toUpperCase() })
-    await expect(panelHeading).toBeVisible()
-    await expect(page.getByRole('link', { name: /call/i })).toHaveAttribute('href', /^tel:/)
+    await row.click()
+    await expect(page.getByRole('heading', { name })).toBeVisible()
+    await expect(page.getByRole('link', { name: /^call$/i })).toHaveAttribute('href', /^tel:/)
 
-    // Status buttons update both the panel and the row chip. The chip text is
-    // lowercase in the DOM and only visually uppercased via CSS, so match that.
-    await page.getByRole('button', { name: 'won', exact: true }).click()
-    await expect(page.getByText('won', { exact: true }).first()).toBeVisible()
+    // Status lives in the lead's action menu; the row badge follows it.
+    await page.getByRole('button', { name: 'Lead actions' }).click()
+    await page.getByRole('menuitemradio', { name: 'Won' }).click()
+    await expect(row.getByText('Won', { exact: true })).toBeVisible()
   })
 
   test('search filters the leads list', async ({ page }) => {
@@ -37,8 +37,8 @@ test.describe('Leads workspace', () => {
   })
 
   test('status tabs filter by status', async ({ page }) => {
-    await page.getByRole('button', { name: /^lost \(/i }).click()
-    await expect(page.getByRole('button', { name: /^lost \(/i })).toHaveClass(/bg-crimson/)
+    await page.getByRole('tab', { name: /^lost \(/i }).click()
+    await expect(page.getByRole('tab', { name: /^lost \(/i })).toHaveAttribute('aria-selected', 'true')
   })
 
   test('vehicle availability control persists on a real inventory vehicle', async ({ page }) => {
@@ -60,14 +60,16 @@ test.describe('Leads workspace', () => {
     })
 
     await page.reload()
-    await page.getByText(name).click()
-    await expect(page.getByText('VEHICLE STATUS', { exact: false })).toBeVisible()
+    await page.locator('button.adm-row', { hasText: name }).click()
+    const availability = page.getByRole('group', { name: 'Vehicle status' })
+    await expect(availability).toBeVisible()
 
-    await page.getByRole('button', { name: 'Pending', exact: true }).click()
-    await expect(page.getByRole('button', { name: 'Pending', exact: true })).toHaveCSS('color', 'rgb(255, 255, 255)')
+    await availability.getByRole('button', { name: 'Pending', exact: true }).click()
+    await expect(availability.getByRole('button', { name: 'Pending', exact: true })).toHaveAttribute('aria-pressed', 'true')
 
     // Reset so repeated test runs start from a known state.
-    await page.getByRole('button', { name: 'Available', exact: true }).click()
+    await availability.getByRole('button', { name: 'Available', exact: true }).click()
+    await expect(availability.getByRole('button', { name: 'Available', exact: true })).toHaveAttribute('aria-pressed', 'true')
   })
 
   test('Facebook leads show quick replies and a copyable schedule link', async ({ page }) => {
@@ -75,8 +77,8 @@ test.describe('Leads workspace', () => {
     const { lead } = await res.json()
     await page.reload()
 
-    await page.locator('button', { hasText: lead.name }).first().click()
-    await expect(page.getByRole('heading', { name: lead.name.toUpperCase() })).toBeVisible()
+    await page.locator('button.adm-row', { hasText: lead.name }).first().click()
+    await expect(page.getByRole('heading', { name: lead.name })).toBeVisible()
 
     await expect(page.getByText('FACEBOOK AUTO REPLY')).toBeVisible()
     await expect(page.getByRole('button', { name: /schedule at this link/i })).toBeVisible()

@@ -23,7 +23,7 @@ test.describe('Mobile admin', () => {
     const { lead } = await res.json()
     await page.reload()
 
-    await page.locator('button', { hasText: lead.name }).first().click()
+    await page.locator('button.adm-row', { hasText: lead.name }).first().click()
     await expect(page.getByRole('link', { name: /^call$/i })).toBeVisible()
 
     await page.request.delete('/api/admin/simulate-fb-lead')
