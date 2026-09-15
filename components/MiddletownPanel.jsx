@@ -1,25 +1,16 @@
-import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
-import { DEALER, ROUTES } from '@/lib/site';
+import { Navigation } from 'lucide-react';
+import { DEALER } from '@/lib/site';
+
+const FULL_ADDRESS = `${DEALER.address}, ${DEALER.city}, ${DEALER.state} ${DEALER.zip}`;
+
+const MAPS_EMBED_URL = `https://www.google.com/maps?q=${encodeURIComponent(FULL_ADDRESS)}&z=15&output=embed`;
+
+const MAPS_DIRECTIONS_URL = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(FULL_ADDRESS)}`;
 
 export default function MiddletownPanel() {
   return (
     <aside className="relative isolate flex flex-col justify-between overflow-hidden px-7 py-10" style={{ background: 'var(--surface)' }}>
-      <div className="absolute inset-0 -z-10 opacity-50">
-        <svg viewBox="0 0 340 560" className="h-full w-full" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-          <g stroke="currentColor" strokeWidth="1" opacity="0.25" fill="none">
-            <path d="M-20 110 L360 74" /><path d="M-20 196 L360 164" />
-            <path d="M-20 280 L360 268" /><path d="M-20 366 L360 372" />
-            <path d="M-20 452 L360 470" />
-            <path d="M58 -20 L32 580" /><path d="M146 -20 L136 580" />
-            <path d="M234 -20 L246 580" /><path d="M318 -20 L340 580" />
-          </g>
-          <g stroke="#E10600" strokeWidth="1.4" opacity="0.45" fill="none">
-            <path d="M-20 280 L360 268" /><path d="M146 -20 L136 580" />
-          </g>
-        </svg>
-      </div>
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(70%_45%_at_42%_48%,rgba(225,6,0,0.2),transparent_70%)]" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(70%_45%_at_42%_48%,rgba(225,6,0,0.15),transparent_70%)]" />
 
       <div className="flex items-start justify-between gap-4">
         <div className="relative mt-1 h-3 w-3">
@@ -34,26 +25,31 @@ export default function MiddletownPanel() {
         </div>
       </div>
 
-      <p className="my-8 -rotate-2 font-script text-[42px] leading-[0.95]">
+      <p className="my-6 -rotate-2 font-script text-[38px] leading-[0.95]">
         We&rsquo;re
         <br />
         From Here.
       </p>
 
       <div className="space-y-4">
-        <div className="text-[11px] font-semibold tracking-[0.12em]" style={{ color: 'var(--muted)' }}>
-          {DEALER.coords.lat}
-          <br />
-          {DEALER.coords.lon}
+        <div className="overflow-hidden rounded-[5px]" style={{ border: '1px solid var(--line)' }}>
+          <iframe
+            src={MAPS_EMBED_URL}
+            title={`Map to ${DEALER.name}`}
+            className="h-[150px] w-full grayscale contrast-125 brightness-90"
+            style={{ border: 0, display: 'block' }}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
         </div>
         <p className="font-display text-[15px] font-bold uppercase leading-snug tracking-[0.08em]">
           Real cars. Real people.
           <br />
           Same streets.
         </p>
-        <Link href={ROUTES.contact} className="btn-red w-full">
-          Get Directions <ArrowRight size={14} />
-        </Link>
+        <a href={MAPS_DIRECTIONS_URL} target="_blank" rel="noopener noreferrer" className="btn-red w-full">
+          Get Directions <Navigation size={14} />
+        </a>
       </div>
     </aside>
   );
