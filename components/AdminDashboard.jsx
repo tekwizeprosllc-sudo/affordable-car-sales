@@ -33,6 +33,7 @@ const TYPE_LABELS = {
   vehicle_inquiry: 'Vehicle Question',
   financing: 'Financing',
   trade_in: 'Trade-In',
+  vehicle_request: 'Car Request',
   contact: 'General',
 };
 

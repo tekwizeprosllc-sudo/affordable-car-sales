@@ -55,6 +55,11 @@ export default function Footer() {
                 Get Pre-Approved
               </Link>
             </li>
+            <li>
+              <Link href={ROUTES.vehicleRequest} className="transition hover:text-crimson">
+                Request A Vehicle
+              </Link>
+            </li>
           </ul>
         </div>
       </div>

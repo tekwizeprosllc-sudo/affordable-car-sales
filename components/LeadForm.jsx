@@ -29,7 +29,13 @@ export default function LeadForm({
       const res = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, type, vehicleId, vehicleTitle, source }),
+        body: JSON.stringify({
+          ...data,
+          type,
+          source,
+          ...(vehicleId ? { vehicleId } : {}),
+          ...(vehicleTitle ? { vehicleTitle } : {}),
+        }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Something went wrong.');
@@ -124,6 +130,20 @@ export default function LeadForm({
             Your Current Vehicle
           </span>
           <input name="tradeDetails" className="field" placeholder="Year, make, model, mileage, condition" />
+        </label>
+      )}
+
+      {fields.vehicleWanted && (
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--muted)' }}>
+            What are you looking for?
+          </span>
+          <input
+            name="vehicleTitle"
+            required
+            className="field"
+            placeholder="e.g. 2019–2022 Honda CR-V, AWD, under $20k"
+          />
         </label>
       )}
 

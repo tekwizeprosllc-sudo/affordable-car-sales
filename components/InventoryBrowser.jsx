@@ -1,8 +1,10 @@
 'use client';
 import { useMemo, useState } from 'react';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import Link from 'next/link';
+import { Search, SlidersHorizontal, X, ArrowRight } from 'lucide-react';
 import VehicleCard from './VehicleCard';
 import { CATEGORIES, PRICE_BUCKETS, SORTS, applyFilters, sortVehicles } from '@/lib/vehicleUtils';
+import { ROUTES } from '@/lib/site';
 
 const EMPTY = { q: '', category: '', make: '', model: '', maxPrice: '' };
 
@@ -117,18 +119,39 @@ export default function InventoryBrowser({ vehicles, initialQuery = '' }) {
           <div className="panel flex flex-col items-center gap-3 rounded-[5px] px-6 py-20 text-center">
             <p className="font-display text-2xl font-bold uppercase">Nothing matches that search</p>
             <p className="text-[13px]" style={{ color: 'var(--muted)' }}>
-              Inventory turns over fast — try widening your filters.
+              Inventory turns over fast — try widening your filters, or tell us what you want and we&rsquo;ll go find it.
             </p>
-            <button onClick={() => setFilters({ ...EMPTY })} className="btn-ghost mt-1">
-              Clear Filters
-            </button>
+            <div className="mt-1 flex flex-wrap items-center justify-center gap-3">
+              <button onClick={() => setFilters({ ...EMPTY })} className="btn-ghost">
+                Clear Filters
+              </button>
+              <Link href={ROUTES.vehicleRequest} className="btn-red">
+                Request This Vehicle <ArrowRight size={14} />
+              </Link>
+            </div>
           </div>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {results.map((v) => (
-              <VehicleCard key={v.id} vehicle={v} />
-            ))}
-          </div>
+          <>
+            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              {results.map((v) => (
+                <VehicleCard key={v.id} vehicle={v} />
+              ))}
+            </div>
+
+            <div className="panel mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[5px] p-6">
+              <div>
+                <p className="font-display text-[15px] font-bold uppercase tracking-[0.06em]">
+                  Not finding the right fit?
+                </p>
+                <p className="mt-1 text-[13px]" style={{ color: 'var(--muted)' }}>
+                  Tell us what you&rsquo;re after and we&rsquo;ll track it down.
+                </p>
+              </div>
+              <Link href={ROUTES.vehicleRequest} className="btn-ghost whitespace-nowrap">
+                Request A Vehicle <ArrowRight size={14} />
+              </Link>
+            </div>
+          </>
         )}
       </div>
     </div>
