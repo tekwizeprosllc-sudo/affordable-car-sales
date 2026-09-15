@@ -21,6 +21,9 @@ export default function Footer() {
             <p className="flex items-center gap-2">
               <Clock size={14} className="text-crimson" /> {DEALER.hours}
             </p>
+            <p className="pl-[22px] text-[12px]" style={{ color: 'var(--muted)' }}>
+              {DEALER.hoursWeekend}
+            </p>
           </div>
         </div>
 

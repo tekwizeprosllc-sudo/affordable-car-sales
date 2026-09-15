@@ -7,7 +7,7 @@ import { ASSETS, DEALER } from '@/lib/site'
 
 export const metadata = {
   title: 'Contact | Affordable Car Sales',
-  description: 'Visit Affordable Car Sales at 1290 Elliot Dr, Middletown, OH 45044. Call (513) 424-0304.',
+  description: `Visit Affordable Car Sales at ${DEALER.address}, ${DEALER.city}, ${DEALER.state} ${DEALER.zip}. Call ${DEALER.phone}.`,
 }
 
 const MAPS_URL = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
@@ -25,7 +25,7 @@ export default function ContactPage({ searchParams }) {
           eyebrow="Contact"
           title="Come See Us."
           accent="We're Local."
-          copy="Questions, directions, or you just want to talk to a person before driving over — we're here six days a week."
+          copy="Questions, directions, or you just want to talk to a person before driving over — weekdays on the lot, weekends by appointment."
           image={ASSETS.dealershipDusk}
           focal="82% center"
         />
@@ -55,8 +55,8 @@ export default function ContactPage({ searchParams }) {
                 <p className="mt-3 flex items-center gap-2 text-[13px]" style={{ color: 'var(--muted)' }}>
                   <Clock size={14} className="text-crimson" /> {DEALER.hours}
                 </p>
-                <p className="mt-1 text-[13px]" style={{ color: 'var(--muted)' }}>
-                  Sunday: Closed
+                <p className="mt-1 pl-[22px] text-[13px]" style={{ color: 'var(--muted)' }}>
+                  {DEALER.hoursWeekend}
                 </p>
               </div>
             </div>

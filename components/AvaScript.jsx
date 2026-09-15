@@ -1,6 +1,7 @@
 'use client';
 import Script from 'next/script';
 import { usePathname } from 'next/navigation';
+import { DEALER } from '@/lib/site';
 
 // Local tone, no data-endpoint: she runs entirely in the browser, so this stays
 // free on Vercel. The Claude-backed variant needs ANTHROPIC_API_KEY and is not
@@ -16,8 +17,8 @@ export default function AvaScript() {
       src="/ava/ava.js"
       strategy="afterInteractive"
       data-dealer="Affordable Car Sales"
-      data-phone="(513) 424-0304"
-      data-hours="Mon–Sat 9AM–7PM"
+      data-phone={DEALER.phone}
+      data-hours={`${DEALER.hours} · ${DEALER.hoursWeekend}`}
       data-city="Middletown, OH"
       data-avatar="/ava/ava.jpg"
       data-accent="#E10600"

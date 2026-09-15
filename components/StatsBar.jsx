@@ -8,7 +8,7 @@ const ITEMS = [
   { icon: MapPin, value: DEALER.city + ', OH', label: 'Family-run lot on Elliot Dr' },
   { icon: ShieldCheck, value: 'Inspected', label: 'Every car checked before it lists' },
   { icon: HeartHandshake, value: 'All Credit', label: 'Considered, subject to lender' },
-  { icon: Clock, value: 'Mon–Sat', label: DEALER.hours.replace('Mon – Sat: ', '') },
+  { icon: Clock, value: DEALER.hoursDays, label: DEALER.hoursTime },
 ];
 
 export default function StatsBar() {

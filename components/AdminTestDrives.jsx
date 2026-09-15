@@ -1,17 +1,9 @@
 'use client';
 import { useMemo, useState } from 'react';
 import { Phone, Car, CalendarCheck, Loader2, ChevronLeft, ChevronRight, List, CalendarDays } from 'lucide-react';
-import { CHANNELS, leadChannel } from '@/lib/leads';
+import { CHANNELS, leadChannel, TEST_DRIVE_STATUS_LABELS, STATUS_COLORS } from '@/lib/leads';
 
 const STATUSES = ['new', 'contacted', 'scheduled', 'showed', 'no-show'];
-
-const STATUS_COLORS = {
-  new: '#E10600',
-  contacted: '#E8A33D',
-  scheduled: '#3D8BE8',
-  showed: '#2FA96B',
-  'no-show': '#7A7F87',
-};
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -97,9 +89,9 @@ export default function AdminTestDrives({ initialLeads, dbError }) {
             <div className="flex flex-wrap items-center gap-2">
               <span
                 className="rounded-[2px] px-2 py-1 text-[9px] font-extrabold uppercase tracking-[0.14em] text-white"
-                style={{ background: STATUS_COLORS[lead.status] || '#7A7F87' }}
+                style={{ background: STATUS_COLORS[lead.status] || '#5C6066' }}
               >
-                {lead.status}
+                {TEST_DRIVE_STATUS_LABELS[lead.status] || lead.status}
               </span>
               <span
                 className="rounded-[2px] px-2 py-1 text-[9px] font-extrabold uppercase tracking-[0.14em] text-white"
@@ -146,7 +138,7 @@ export default function AdminTestDrives({ initialLeads, dbError }) {
                   className="rounded-[3px] px-2.5 py-1.5 text-[9px] font-extrabold uppercase tracking-[0.1em] transition disabled:opacity-40"
                   style={{ background: 'var(--surface-2)', color: 'var(--muted)', border: '1px solid var(--line)' }}
                 >
-                  {s}
+                  {TEST_DRIVE_STATUS_LABELS[s] || s}
                 </button>
               ))}
             </div>

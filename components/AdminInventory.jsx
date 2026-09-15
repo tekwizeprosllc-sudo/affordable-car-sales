@@ -1,28 +1,47 @@
 'use client';
-import { useState } from 'react';
-import { Plus, Trash2, EyeOff, Eye, Loader2, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import Link from 'next/link';
+import { Plus, Trash2, EyeOff, Eye, Loader2, X, Search, ExternalLink, Car } from 'lucide-react';
+import { VEHICLE_STATUSES, VEHICLE_STATUS_LABELS, VEHICLE_STATUS_COLORS as STATUS_COLORS } from '@/lib/vehicles';
 
-const STATUSES = ['live', 'pending', 'sold'];
 const BODY_TYPES = ['Sedan', 'Coupe', 'SUV', 'Truck', 'Van-Minivan', 'Wagon', 'Hatchback'];
 
 function StatusPills({ value, onChange, disabled }) {
   return (
-    <span className="flex gap-1">
-      {STATUSES.map((s) => (
+    <span className="flex flex-wrap gap-1">
+      {VEHICLE_STATUSES.map((s) => (
         <button
           key={s}
           disabled={disabled || value === s}
           onClick={() => onChange(s)}
-          className={`rounded-[3px] px-2 py-1 text-[9px] font-extrabold uppercase tracking-[0.1em] transition disabled:opacity-45 ${
-            value === s ? 'bg-crimson text-white' : ''
-          }`}
-          style={value === s ? undefined : { background: 'var(--surface-2)', color: 'var(--muted)', border: '1px solid var(--line)' }}
+          className="rounded-[3px] px-2 py-1 text-[9px] font-extrabold uppercase tracking-[0.1em] transition disabled:opacity-100"
+          style={
+            value === s
+              ? { background: STATUS_COLORS[s] || 'var(--surface-2)', color: '#fff', border: '1px solid transparent' }
+              : { background: 'var(--surface-2)', color: 'var(--muted)', border: '1px solid var(--line)' }
+          }
         >
-          {s}
+          {VEHICLE_STATUS_LABELS[s]}
         </button>
       ))}
     </span>
   );
+}
+
+function Thumb({ src }) {
+  return src ? (
+    <img src={src} alt="" className="h-14 w-20 shrink-0 rounded-[4px] object-cover" />
+  ) : (
+    <div className="grid h-14 w-20 shrink-0 place-items-center rounded-[4px]" style={{ background: 'var(--surface-2)' }}>
+      <Car size={18} style={{ color: 'var(--muted)' }} />
+    </div>
+  );
+}
+
+function matches(term, ...fields) {
+  if (!term) return true;
+  const haystack = fields.filter(Boolean).join(' ').toLowerCase();
+  return haystack.includes(term);
 }
 
 export default function AdminInventory({ initialManual, scraped, initialOverrides, dbError }) {
@@ -31,6 +50,17 @@ export default function AdminInventory({ initialManual, scraped, initialOverride
   const [busy, setBusy] = useState(null);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState('');
+  const [q, setQ] = useState('');
+
+  const term = q.trim().toLowerCase();
+  const filteredManual = useMemo(
+    () => manual.filter((v) => matches(term, v.year, v.make, v.model, v.trim, v.stock, v.vin)),
+    [manual, term]
+  );
+  const filteredScraped = useMemo(
+    () => scraped.filter((v) => matches(term, v.year, v.make, v.model, v.stock, v.vin)),
+    [scraped, term]
+  );
 
   async function addVehicle(e) {
     e.preventDefault();
@@ -103,6 +133,20 @@ export default function AdminInventory({ initialManual, scraped, initialOverride
         </button>
       </div>
 
+      <div
+        className="mb-6 flex items-center gap-2 rounded-[3px] px-3"
+        style={{ background: 'var(--surface-2)', border: '1px solid var(--line)' }}
+      >
+        <Search size={15} style={{ color: 'var(--muted)' }} />
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search make, model, stock #, or VIN…"
+          aria-label="Search inventory"
+          className="w-full max-w-md bg-transparent py-2.5 text-[13px] outline-none placeholder:text-[color:var(--muted)]"
+        />
+      </div>
+
       {dbError && (
         <p className="panel mb-5 rounded-[5px] p-4 text-[12.5px]" style={{ color: 'var(--muted)' }}>
           Staff-managed inventory needs a database. Set <code>DATABASE_URL</code> to enable adding and hiding vehicles.
@@ -153,20 +197,30 @@ export default function AdminInventory({ initialManual, scraped, initialOverride
         </form>
       )}
 
-      {manual.length > 0 && (
+      {filteredManual.length > 0 && (
         <section className="mb-8">
           <h2 className="mb-3 font-display text-[13px] font-bold uppercase tracking-[0.16em]" style={{ color: 'var(--muted)' }}>
             Staff-added
           </h2>
           <div className="flex flex-col gap-2">
-            {manual.map((v) => (
+            {filteredManual.map((v) => (
               <article key={v.id} className="panel flex flex-wrap items-center gap-4 rounded-[5px] p-4">
+                <Thumb src={v.image} />
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-display text-[16px] font-bold uppercase">
-                    {v.year} {v.make} {v.model} {v.trim}
-                  </h3>
+                  <Link href={`/inventory/${v.id}`} target="_blank" className="inline-flex items-center gap-1.5 transition hover:text-crimson">
+                    <h3 className="font-display text-[16px] font-bold uppercase">
+                      {v.year} {v.make} {v.model} {v.trim}
+                    </h3>
+                    <ExternalLink size={12} style={{ color: 'var(--muted)' }} />
+                  </Link>
                   <p className="text-[11.5px]" style={{ color: 'var(--muted)' }}>
-                    {[v.price ? `$${v.price.toLocaleString()}` : 'No price', v.mileage ? `${v.mileage.toLocaleString()} mi` : null, v.bodyType, `${v.photos.length} photo${v.photos.length === 1 ? '' : 's'}`]
+                    {[
+                      v.price ? `$${v.price.toLocaleString()}` : 'No price',
+                      v.mileage ? `${v.mileage.toLocaleString()} mi` : null,
+                      v.bodyType,
+                      v.vin ? `VIN ${v.vin}` : null,
+                      `${v.photos.length} photo${v.photos.length === 1 ? '' : 's'}`,
+                    ]
                       .filter(Boolean)
                       .join('  ·  ')}
                   </p>
@@ -192,17 +246,26 @@ export default function AdminInventory({ initialManual, scraped, initialOverride
           Live from the lot
         </h2>
         <div className="flex flex-col gap-2">
-          {scraped.map((v) => {
+          {filteredScraped.map((v) => {
             const o = overrides[v.id] || {};
             const hidden = !!o.hidden || o.status === 'sold';
             return (
               <article key={v.id} className="panel flex flex-wrap items-center gap-4 rounded-[5px] p-4" style={hidden ? { opacity: 0.55 } : undefined}>
+                <Thumb src={v.image} />
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-display text-[16px] font-bold uppercase">
-                    {v.year} {v.make} {v.model}
-                  </h3>
+                  <Link href={`/inventory/${v.id}`} target="_blank" className="inline-flex items-center gap-1.5 transition hover:text-crimson">
+                    <h3 className="font-display text-[16px] font-bold uppercase">
+                      {v.year} {v.make} {v.model}
+                    </h3>
+                    <ExternalLink size={12} style={{ color: 'var(--muted)' }} />
+                  </Link>
                   <p className="text-[11.5px]" style={{ color: 'var(--muted)' }}>
-                    {[v.price ? `$${v.price.toLocaleString()}` : 'Call for price', v.mileage ? `${v.mileage.toLocaleString()} mi` : null, `Stock ${v.stock}`]
+                    {[
+                      v.price ? `$${v.price.toLocaleString()}` : 'Call for price',
+                      v.mileage ? `${v.mileage.toLocaleString()} mi` : null,
+                      `Stock ${v.stock}`,
+                      v.vin ? `VIN ${v.vin}` : null,
+                    ]
                       .filter(Boolean)
                       .join('  ·  ')}
                   </p>
@@ -224,6 +287,11 @@ export default function AdminInventory({ initialManual, scraped, initialOverride
               </article>
             );
           })}
+          {filteredScraped.length === 0 && (
+            <p className="panel rounded-[5px] p-8 text-center text-[13px]" style={{ color: 'var(--muted)' }}>
+              No vehicles match that search.
+            </p>
+          )}
         </div>
       </section>
     </main>

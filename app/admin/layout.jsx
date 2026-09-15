@@ -1,16 +1,19 @@
 import { isAuthed } from '@/lib/auth'
-import AdminNav from '@/components/AdminNav'
+import { leadCounts } from '@/lib/db'
+import AdminShell from '@/components/admin/AdminShell'
 
 export const dynamic = 'force-dynamic'
 
-export default function AdminLayout({ children }) {
+export default async function AdminLayout({ children }) {
   // Unauthenticated renders the bare login screen with no staff chrome.
   if (!isAuthed()) return children
 
-  return (
-    <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
-      <AdminNav />
-      {children}
-    </div>
-  )
+  let counts = null
+  try {
+    counts = await leadCounts()
+  } catch {
+    counts = null
+  }
+
+  return <AdminShell counts={counts}>{children}</AdminShell>
 }

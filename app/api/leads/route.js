@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createLead, LEAD_TYPES } from '@/lib/db'
+import { DEALER } from '@/lib/site'
 
 export const dynamic = 'force-dynamic'
 
@@ -70,7 +71,7 @@ export async function POST(request) {
   } catch (err) {
     console.error('Lead save failed:', err)
     return NextResponse.json(
-      { error: `We couldn’t save that just now. Please call us at (513) 424-0304.` },
+      { error: `We couldn’t save that just now. Please call us at ${DEALER.phone}.` },
       { status: 500 }
     )
   }
