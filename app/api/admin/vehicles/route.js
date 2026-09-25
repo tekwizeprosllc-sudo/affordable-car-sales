@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { isAuthed } from '@/lib/auth'
 import { listManualVehicles, createVehicle, updateVehicle, deleteVehicle, setOverride } from '@/lib/vehicles'
+import { getInventory } from '@/lib/inventory'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,6 +29,16 @@ export async function POST(request) {
   }
 
   try {
+    const vin = body.vin ? String(body.vin).trim().toUpperCase() : null
+    if (vin && !/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)) {
+      return NextResponse.json({ error: 'Enter a valid 17-character VIN.' }, { status: 400 })
+    }
+    if (vin) {
+      const [manual, scraped] = await Promise.all([listManualVehicles(), getInventory().catch(() => [])])
+      if ([...manual, ...scraped].some((vehicle) => String(vehicle.vin || '').toUpperCase() === vin)) {
+        return NextResponse.json({ error: 'This VIN is already in inventory.' }, { status: 409 })
+      }
+    }
     const vehicle = await createVehicle({
       year: Number(body.year) || null,
       make: String(body.make).slice(0, 60),
@@ -40,7 +51,7 @@ export async function POST(request) {
       engine: body.engine || null,
       trans: body.trans || null,
       color: body.color || null,
-      vin: body.vin || null,
+      vin,
       stock: body.stock || null,
       description: body.description ? String(body.description).slice(0, 4000) : null,
       badges: Array.isArray(body.badges) ? body.badges.slice(0, 6) : [],

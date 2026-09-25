@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Plus, Trash2, EyeOff, Eye, Loader2, X, Search, ExternalLink, Car } from 'lucide-react';
 import { VEHICLE_STATUSES, VEHICLE_STATUS_LABELS, VEHICLE_STATUS_COLORS as STATUS_COLORS } from '@/lib/vehicles';
@@ -50,6 +50,9 @@ export default function AdminInventory({ initialManual, scraped, initialOverride
   const [busy, setBusy] = useState(null);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState('');
+  const [vinBusy, setVinBusy] = useState(false);
+  const [vinNotice, setVinNotice] = useState('');
+  const vehicleFormRef = useRef(null);
   const [q, setQ] = useState('');
 
   const term = q.trim().toLowerCase();
@@ -61,6 +64,30 @@ export default function AdminInventory({ initialManual, scraped, initialOverride
     () => scraped.filter((v) => matches(term, v.year, v.make, v.model, v.stock, v.vin)),
     [scraped, term]
   );
+
+  async function decodeVin() {
+    const form = vehicleFormRef.current;
+    const vin = String(form?.elements?.vin?.value || '').trim().toUpperCase();
+    setVinNotice('');
+    if (vin.length !== 17) {
+      setVinNotice('Enter all 17 VIN characters first.');
+      return;
+    }
+    setVinBusy(true);
+    const res = await fetch(`/api/admin/vin/${encodeURIComponent(vin)}`);
+    const json = await res.json();
+    if (!res.ok) setVinNotice(json.error || 'VIN lookup failed.');
+    else if (json.duplicate) setVinNotice(`Already in inventory: ${json.duplicate.title || json.duplicate.id}`);
+    else {
+      const values = ['year', 'make', 'model', 'trim', 'bodyType', 'drive', 'engine', 'trans'];
+      values.forEach((name) => {
+        if (form.elements[name] && json[name] != null) form.elements[name].value = json[name];
+      });
+      form.elements.vin.value = json.vin;
+      setVinNotice(json.warning || 'VIN decoded. Confirm all equipment and options before saving.');
+    }
+    setVinBusy(false);
+  }
 
   async function addVehicle(e) {
     e.preventDefault();
@@ -154,7 +181,7 @@ export default function AdminInventory({ initialManual, scraped, initialOverride
       )}
 
       {adding && (
-        <form onSubmit={addVehicle} className="panel mb-6 rounded-[5px] p-5">
+        <form ref={vehicleFormRef} onSubmit={addVehicle} className="panel mb-6 rounded-[5px] p-5">
           <h2 className="mb-4 font-display text-lg font-black uppercase">New Vehicle</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <input name="year" className="field" placeholder="Year" inputMode="numeric" />
@@ -177,7 +204,12 @@ export default function AdminInventory({ initialManual, scraped, initialOverride
             </select>
             <input name="engine" className="field" placeholder="Engine" />
             <input name="trans" className="field" placeholder="Transmission" />
-            <input name="vin" className="field" placeholder="VIN (optional)" />
+            <div className="flex gap-2">
+              <input name="vin" className="field min-w-0 flex-1 uppercase" placeholder="17-character VIN" maxLength={17} />
+              <button type="button" onClick={decodeVin} disabled={vinBusy} className="btn-red shrink-0 px-3">
+                {vinBusy ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />} Decode
+              </button>
+            </div>
             <input name="stock" className="field" placeholder="Stock #" />
           </div>
           <div className="mt-3 grid gap-3">
@@ -190,6 +222,7 @@ export default function AdminInventory({ initialManual, scraped, initialOverride
               placeholder="Photo URLs, one per line (Vercel Blob uploads land here once BLOB_READ_WRITE_TOKEN is set)"
             />
           </div>
+          {vinNotice && <p className="mt-3 text-[12px] font-semibold" style={{ color: 'var(--muted)' }}>{vinNotice}</p>}
           {error && <p className="mt-3 text-[12px] font-semibold text-crimson">{error}</p>}
           <button type="submit" disabled={busy === 'new'} className="btn-red mt-4">
             {busy === 'new' ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />} Save Vehicle
