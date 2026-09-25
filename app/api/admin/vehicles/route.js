@@ -34,7 +34,12 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Enter a valid 17-character VIN.' }, { status: 400 })
     }
     if (vin) {
-      const [manual, scraped] = await Promise.all([listManualVehicles(), getInventory().catch(() => [])])
+      const [manualResult, inventory] = await Promise.all([
+        listManualVehicles(),
+        getInventory().catch(() => ({ vehicles: [] })),
+      ])
+      const manual = Array.isArray(manualResult) ? manualResult : []
+      const scraped = Array.isArray(inventory?.vehicles) ? inventory.vehicles : []
       if ([...manual, ...scraped].some((vehicle) => String(vehicle.vin || '').toUpperCase() === vin)) {
         return NextResponse.json({ error: 'This VIN is already in inventory.' }, { status: 409 })
       }
@@ -50,9 +55,17 @@ export async function POST(request) {
       drive: body.drive || null,
       engine: body.engine || null,
       trans: body.trans || null,
+      fuelType: body.fuelType || null,
+      doors: Number(body.doors) || null,
+      cylinders: Number(body.cylinders) || null,
       color: body.color || null,
       vin,
       stock: body.stock || null,
+      purchaseCost: Number(body.purchaseCost) || null,
+      reconditioningCost: Number(body.reconditioningCost) || null,
+      dealerFees: Number(body.dealerFees) || null,
+      warrantyCost: Number(body.warrantyCost) || null,
+      interestRate: body.interestRate === '' || body.interestRate == null ? null : Number(body.interestRate),
       description: body.description ? String(body.description).slice(0, 4000) : null,
       badges: Array.isArray(body.badges) ? body.badges.slice(0, 6) : [],
       photos: Array.isArray(body.photos) ? body.photos.slice(0, 8) : [],
