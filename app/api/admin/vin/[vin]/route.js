@@ -27,10 +27,12 @@ export async function GET(_request, { params }) {
     const row = (await response.json()).Results?.[0]
     if (!row) throw new Error('NHTSA returned no VIN result.')
 
-    const [scraped, manual] = await Promise.all([
-      getInventory().catch(() => []),
+    const [inventory, manualResult] = await Promise.all([
+      getInventory().catch(() => ({ vehicles: [] })),
       listManualVehicles().catch(() => []),
     ])
+    const scraped = Array.isArray(inventory?.vehicles) ? inventory.vehicles : []
+    const manual = Array.isArray(manualResult) ? manualResult : []
     const duplicate = [...scraped, ...manual].find((vehicle) => String(vehicle.vin || '').toUpperCase() === vin)
     const engine = [
       clean(row.DisplacementL) && `${clean(row.DisplacementL)}L`,

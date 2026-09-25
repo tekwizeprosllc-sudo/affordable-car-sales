@@ -44,6 +44,34 @@ function matches(term, ...fields) {
   return haystack.includes(term);
 }
 
+function normalizedSelectValue(name, value) {
+  const text = String(value || '').toLowerCase();
+  if (name === 'bodyType') {
+    if (text.includes('sport utility') || text.includes('crossover')) return 'SUV';
+    if (text.includes('pickup') || text.includes('truck')) return 'Truck';
+    if (text.includes('minivan') || text.includes('van')) return 'Van-Minivan';
+    if (text.includes('hatchback')) return 'Hatchback';
+    if (text.includes('wagon')) return 'Wagon';
+    if (text.includes('coupe')) return 'Coupe';
+    if (text.includes('sedan') || text.includes('saloon')) return 'Sedan';
+  }
+  if (name === 'drive') {
+    if (text.includes('all-wheel') || text === 'awd') return 'AWD';
+    if (text.includes('front-wheel') || text === 'fwd') return 'FWD';
+    if (text.includes('rear-wheel') || text === 'rwd') return 'RWD';
+    if (text.includes('4wd') || text.includes('4-wheel') || text.includes('4x4')) return '4WD';
+  }
+  return value;
+}
+
+function fillFormField(form, name, value) {
+  const field = form?.elements?.[name];
+  if (!field || value == null || value === '') return;
+  field.value = normalizedSelectValue(name, value);
+  field.dispatchEvent(new Event('input', { bubbles: true }));
+  field.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
 export default function AdminInventory({ initialManual, scraped, initialOverrides, dbError }) {
   const [manual, setManual] = useState(initialManual || []);
   const [overrides, setOverrides] = useState(initialOverrides || {});
@@ -74,19 +102,26 @@ export default function AdminInventory({ initialManual, scraped, initialOverride
       return;
     }
     setVinBusy(true);
-    const res = await fetch(`/api/admin/vin/${encodeURIComponent(vin)}`);
-    const json = await res.json();
-    if (!res.ok) setVinNotice(json.error || 'VIN lookup failed.');
-    else if (json.duplicate) setVinNotice(`Already in inventory: ${json.duplicate.title || json.duplicate.id}`);
-    else {
-      const values = ['year', 'make', 'model', 'trim', 'bodyType', 'drive', 'engine', 'trans'];
-      values.forEach((name) => {
-        if (form.elements[name] && json[name] != null) form.elements[name].value = json[name];
-      });
-      form.elements.vin.value = json.vin;
-      setVinNotice(json.warning || 'VIN decoded. Confirm all equipment and options before saving.');
+    try {
+      const res = await fetch(`/api/admin/vin/${encodeURIComponent(vin)}`);
+      const json = await res.json();
+      if (!res.ok) {
+        setVinNotice(json.error || 'VIN lookup failed.');
+        return;
+      }
+
+      ['year', 'make', 'model', 'trim', 'bodyType', 'drive', 'engine', 'trans', 'vin']
+        .forEach((name) => fillFormField(form, name, json[name]));
+
+      const duplicateMessage = json.duplicate
+        ? `Already in inventory: ${json.duplicate.title || json.duplicate.id}. Details were still filled for review.`
+        : '';
+      setVinNotice(duplicateMessage || json.warning || 'VIN decoded. Confirm all equipment and options before saving.');
+    } catch {
+      setVinNotice('VIN lookup could not connect. Try again.');
+    } finally {
+      setVinBusy(false);
     }
-    setVinBusy(false);
   }
 
   async function addVehicle(e) {
