@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { isAuthed } from '@/lib/auth'
 import { listManualVehicles, createVehicle, updateVehicle, deleteVehicle, setOverride } from '@/lib/vehicles'
+import { getInventory } from '@/lib/inventory'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,6 +29,21 @@ export async function POST(request) {
   }
 
   try {
+    const vin = body.vin ? String(body.vin).trim().toUpperCase() : null
+    if (vin && !/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)) {
+      return NextResponse.json({ error: 'Enter a valid 17-character VIN.' }, { status: 400 })
+    }
+    if (vin) {
+      const [manualResult, inventory] = await Promise.all([
+        listManualVehicles(),
+        getInventory().catch(() => ({ vehicles: [] })),
+      ])
+      const manual = Array.isArray(manualResult) ? manualResult : []
+      const scraped = Array.isArray(inventory?.vehicles) ? inventory.vehicles : []
+      if ([...manual, ...scraped].some((vehicle) => String(vehicle.vin || '').toUpperCase() === vin)) {
+        return NextResponse.json({ error: 'This VIN is already in inventory.' }, { status: 409 })
+      }
+    }
     const vehicle = await createVehicle({
       year: Number(body.year) || null,
       make: String(body.make).slice(0, 60),
@@ -39,9 +55,17 @@ export async function POST(request) {
       drive: body.drive || null,
       engine: body.engine || null,
       trans: body.trans || null,
+      fuelType: body.fuelType || null,
+      doors: Number(body.doors) || null,
+      cylinders: Number(body.cylinders) || null,
       color: body.color || null,
-      vin: body.vin || null,
+      vin,
       stock: body.stock || null,
+      purchaseCost: Number(body.purchaseCost) || null,
+      reconditioningCost: Number(body.reconditioningCost) || null,
+      dealerFees: Number(body.dealerFees) || null,
+      warrantyCost: Number(body.warrantyCost) || null,
+      interestRate: body.interestRate === '' || body.interestRate == null ? null : Number(body.interestRate),
       description: body.description ? String(body.description).slice(0, 4000) : null,
       badges: Array.isArray(body.badges) ? body.badges.slice(0, 6) : [],
       photos: Array.isArray(body.photos) ? body.photos.slice(0, 8) : [],
